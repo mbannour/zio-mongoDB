@@ -108,7 +108,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
    * @return a Observable containing the command result
    */
     def runCommand[TResult](command: Bson)(implicit ct: ClassTag[TResult]): IO[Throwable, TResult] =
-      SingleItemSubscription(javaMongoDatabase.runCommand[TResult](command, ct.runtimeClass.asInstanceOf[Class[TResult]])).subscribe
+      SingleItemSubscription(javaMongoDatabase.runCommand[TResult](command, ct.runtimeClass.asInstanceOf[Class[TResult]])).fetch
 
     /**
      * Executes command in the context of the current database.
@@ -119,7 +119,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @return a Observable containing the command result
      */
     def runCommand[TResult](command: Bson, readPreference: ReadPreference)(implicit ct: ClassTag[TResult]): IO[Throwable, TResult] =
-      SingleItemSubscription(javaMongoDatabase.runCommand(command, readPreference, ct.runtimeClass.asInstanceOf[Class[TResult]])).subscribe
+      SingleItemSubscription(javaMongoDatabase.runCommand(command, readPreference, ct.runtimeClass.asInstanceOf[Class[TResult]])).fetch
 
     /**
      * Executes command in the context of the current database using the primary server.
@@ -132,7 +132,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def runCommand[TResult](clientSession: ClientSession, command: Bson)(implicit ct: ClassTag[TResult]): IO[Throwable, TResult] =
-      SingleItemSubscription(javaMongoDatabase.runCommand[TResult](clientSession, command, ct.runtimeClass.asInstanceOf[Class[TResult]])).subscribe
+      SingleItemSubscription(javaMongoDatabase.runCommand[TResult](clientSession, command, ct.runtimeClass.asInstanceOf[Class[TResult]])).fetch
 
     /**
      * Executes command in the context of the current database.
@@ -145,7 +145,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def runCommand[TResult](clientSession: ClientSession, command: Bson, readPreference: ReadPreference)(implicit ct: ClassTag[TResult]) =
-      SingleItemSubscription(javaMongoDatabase.runCommand(clientSession, command, readPreference, ct.runtimeClass.asInstanceOf[Class[TResult]])).subscribe
+      SingleItemSubscription(javaMongoDatabase.runCommand(clientSession, command, readPreference, ct.runtimeClass.asInstanceOf[Class[TResult]])).fetch
 
     /**
      * Drops this database.
@@ -153,7 +153,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * [[http://docs.mongodb.org/manual/reference/commands/dropDatabase/#dbcmd.dropDatabase Drop database]]
      * @return a Observable identifying when the database has been dropped
      */
-    def drop(): IO[Throwable, Completed] = CompletedSubscription(javaMongoDatabase.drop()).subscribe
+    def drop(): IO[Throwable, Completed] = CompletedSubscription(javaMongoDatabase.drop()).fetch
 
     /**
      * Drops this database.
@@ -165,14 +165,14 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def drop(clientSession: ClientSession): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.drop(clientSession)).subscribe
+      CompletedSubscription(javaMongoDatabase.drop(clientSession)).fetch
 
     /**
      * Gets the names of all the collections in this database.
      *
      * @return a Observable with all the names of all the collections in this database
      */
-    def listCollectionNames(): IO[Throwable, String] = SingleItemSubscription(javaMongoDatabase.listCollectionNames()).subscribe
+    def listCollectionNames(): IO[Throwable, String] = SingleItemSubscription(javaMongoDatabase.listCollectionNames()).fetch
 
     /**
      * Finds all the collections in this database.
@@ -182,7 +182,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @return the fluent list collections interface
      */
     def listCollections[TResult]()(implicit ct: ClassTag[TResult]): IO[Throwable, Iterable[TResult]] =
-      ListCollectionsSubscription(javaMongoDatabase.listCollections(ct.runtimeClass.asInstanceOf[Class[TResult]])).subscribe
+      ListCollectionsSubscription(javaMongoDatabase.listCollections(ct.runtimeClass.asInstanceOf[Class[TResult]])).fetch
 
     /**
      * Gets the names of all the collections in this database.
@@ -192,7 +192,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @since 2.2
      * @note Requires MongoDB 3.6 or greater
      */
-    def listCollectionNames(clientSession: ClientSession): IO[Throwable, String] = SingleItemSubscription(javaMongoDatabase.listCollectionNames(clientSession)).subscribe
+    def listCollectionNames(clientSession: ClientSession): IO[Throwable, String] = SingleItemSubscription(javaMongoDatabase.listCollectionNames(clientSession)).fetch
 
     /**
      * Finds all the collections in this database.
@@ -206,7 +206,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      */
     def listCollections[TResult](clientSession: ClientSession)(implicit ct: ClassTag[TResult]
     ): IO[Throwable, Iterable[TResult]] =
-      ListCollectionsSubscription(javaMongoDatabase.listCollections(clientSession, ct.runtimeClass.asInstanceOf[Class[TResult]])).subscribe
+      ListCollectionsSubscription(javaMongoDatabase.listCollections(clientSession, ct.runtimeClass.asInstanceOf[Class[TResult]])).fetch
 
     /**
      * Create a new collection with the given name.
@@ -216,7 +216,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @return a Observable identifying when the collection has been created
      */
     def createCollection(collectionName: String): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createCollection(collectionName)).subscribe
+      CompletedSubscription(javaMongoDatabase.createCollection(collectionName)).fetch
 
     /**
      * Create a new collection with the selected options
@@ -227,7 +227,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @return a Observable identifying when the collection has been created
      */
     def createCollection(collectionName: String, options: CreateCollectionOptions): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createCollection(collectionName, options)).subscribe
+      CompletedSubscription(javaMongoDatabase.createCollection(collectionName, options)).fetch
 
     /**
      * Create a new collection with the given name.
@@ -240,7 +240,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def createCollection(clientSession: ClientSession, collectionName: String): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createCollection(clientSession, collectionName)).subscribe
+      CompletedSubscription(javaMongoDatabase.createCollection(clientSession, collectionName)).fetch
 
     /**
      * Create a new collection with the selected options
@@ -254,7 +254,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def createCollection(clientSession: ClientSession, collectionName: String, options: CreateCollectionOptions): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createCollection(clientSession, collectionName, options)).subscribe
+      CompletedSubscription(javaMongoDatabase.createCollection(clientSession, collectionName, options)).fetch
 
     /**
      * Creates a view with the given name, backing collection/view name, and aggregation pipeline that defines the view.
@@ -267,7 +267,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.4 or greater
      */
     def createView(viewName: String, viewOn: String, pipeline: Seq[Bson]): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createView(viewName, viewOn, pipeline.asJava)).subscribe
+      CompletedSubscription(javaMongoDatabase.createView(viewName, viewOn, pipeline.asJava)).fetch
 
     /**
      * Creates a view with the given name, backing collection/view name, aggregation pipeline, and options that defines the view.
@@ -281,7 +281,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.4 or greater
      */
     def createView(viewName: String, viewOn: String, pipeline: Seq[Bson], createViewOptions: CreateViewOptions): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createView(viewName, viewOn, pipeline.asJava, createViewOptions)).subscribe
+      CompletedSubscription(javaMongoDatabase.createView(viewName, viewOn, pipeline.asJava, createViewOptions)).fetch
 
     /**
      * Creates a view with the given name, backing collection/view name, and aggregation pipeline that defines the view.
@@ -295,7 +295,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def createView(clientSession: ClientSession, viewName: String, viewOn: String, pipeline: Seq[Bson]): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createView(clientSession, viewName, viewOn, pipeline.asJava)).subscribe
+      CompletedSubscription(javaMongoDatabase.createView(clientSession, viewName, viewOn, pipeline.asJava)).fetch
 
     /**
      * Creates a view with the given name, backing collection/view name, aggregation pipeline, and options that defines the view.
@@ -311,7 +311,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      */
     def createView(clientSession: ClientSession, viewName: String, viewOn: String, pipeline: Seq[Bson],
                    createViewOptions: CreateViewOptions): IO[Throwable, Completed] =
-      CompletedSubscription(javaMongoDatabase.createView(clientSession, viewName, viewOn, pipeline.asJava, createViewOptions)).subscribe
+      CompletedSubscription(javaMongoDatabase.createView(clientSession, viewName, viewOn, pipeline.asJava, createViewOptions)).fetch
 
     /**
      * Creates a change stream for this collection.
@@ -322,7 +322,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 4.0 or greater
      */
     def watch(): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(javaMongoDatabase.watch()).subscribe
+      ChangeStreamSubscription(javaMongoDatabase.watch()).fetch
 
     /**
      * Creates a change stream for this collection.
@@ -334,7 +334,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 4.0 or greater
      */
     def watch(pipeline: Seq[Bson]): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(javaMongoDatabase.watch(pipeline.asJava)).subscribe
+      ChangeStreamSubscription(javaMongoDatabase.watch(pipeline.asJava)).fetch
 
     /**
      * Creates a change stream for this collection.
@@ -346,7 +346,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 4.0 or greater
      */
     def watch(clientSession: ClientSession): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(javaMongoDatabase.watch(clientSession)).subscribe
+      ChangeStreamSubscription(javaMongoDatabase.watch(clientSession)).fetch
 
     /**
      * Creates a change stream for this collection.
@@ -359,7 +359,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 4.0 or greater
      */
     def watch(clientSession: ClientSession, pipeline: Seq[Bson]): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(javaMongoDatabase.watch(clientSession, pipeline.asJava)).subscribe
+      ChangeStreamSubscription(javaMongoDatabase.watch(clientSession, pipeline.asJava)).fetch
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -371,7 +371,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def aggregate[C](pipeline: Seq[Bson])(ct: ClassTag[C]): IO[Throwable, Iterable[C]] =
-      AggregateSubscription(javaMongoDatabase.aggregate[C](pipeline.asJava,  ct.runtimeClass.asInstanceOf[Class[C]])).subscribe
+      AggregateSubscription(javaMongoDatabase.aggregate[C](pipeline.asJava,  ct.runtimeClass.asInstanceOf[Class[C]])).fetch
 
     /**
      * Aggregates documents according to the specified aggregation pipeline.
@@ -384,7 +384,7 @@ case class MongoDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
      * @note Requires MongoDB 3.6 or greater
      */
     def aggregate[C](clientSession: ClientSession, pipeline: Seq[Bson])(ct: ClassTag[C]): IO[Throwable, Iterable[C]] =
-      AggregateSubscription(javaMongoDatabase.aggregate(clientSession, pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]])).subscribe
+      AggregateSubscription(javaMongoDatabase.aggregate(clientSession, pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]])).fetch
 }
 
 

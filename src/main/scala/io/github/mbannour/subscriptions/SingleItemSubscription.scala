@@ -5,7 +5,7 @@ import zio.IO
 
 case class SingleItemSubscription[T](p: JPublisher[T]) extends Subscription[T] {
 
- override def subscribe[_]: IO[Throwable, T] = IO.async[Throwable, T] { callback =>
+ override def fetch[_]: IO[Throwable, T] = IO.effectAsync[Throwable, T] { callback =>
     p.subscribe {
       new JSubscriber[T] {
         @volatile
@@ -22,7 +22,7 @@ case class SingleItemSubscription[T](p: JPublisher[T]) extends Subscription[T] {
     }
   }
 
- def optionalSubscribe[_]: IO[Throwable, Option[T]] = IO.async[Throwable, Option[T]] { callback =>
+ def headOption[_]: IO[Throwable, Option[T]] = IO.effectAsync[Throwable, Option[T]] { callback =>
     p.subscribe {
       new JSubscriber[T] {
         @volatile

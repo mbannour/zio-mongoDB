@@ -20,12 +20,20 @@ lazy val root = (project in file("."))
       "-language:implicitConversions",
       "-Xcheckinit",
     ),
-      libraryDependencies ++= Seq(
+    Test / parallelExecution := false,
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
+    Test / testOptions  ++= Seq(Tests.Setup(() => MongoEmbedded.start), Tests.Cleanup(()=> MongoEmbedded.stop)),
+    libraryDependencies ++= Seq(
         mongoScala,
-      mongodbDriverStreams,
-      zio,
-      zioStreams,
-      scalaTest % Test
-    )
+        mongodbDriverStreams,
+        logback,
+        zio,
+        zioStreams,
+        zioMagnoliaTest % Test,
+        zioTestSbt % Test,
+        zioTest % Test,
+        scalaTest % Test
+      )
   )
+
 

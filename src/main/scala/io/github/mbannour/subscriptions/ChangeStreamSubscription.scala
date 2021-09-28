@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subscription[ChangeStreamDocument[T]] {
 
-  override def subscribe[_]: IO[Throwable, ChangeStreamDocument[T]] = IO.async[Throwable, ChangeStreamDocument[T]] {
+  override def fetch[_]: IO[Throwable, ChangeStreamDocument[T]] = IO.effectAsync[Throwable, ChangeStreamDocument[T]] {
     callback =>
       p.subscribe {
         new JSubscriber[ChangeStreamDocument[T]] {

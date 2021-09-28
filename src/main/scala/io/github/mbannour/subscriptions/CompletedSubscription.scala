@@ -6,7 +6,7 @@ import zio.IO
 
 case class CompletedSubscription(p: JPublisher[Void]) extends Subscription[Completed] {
 
-  override def subscribe[_]: IO[Throwable, Completed] = IO.async[Throwable, Completed] { callback =>
+  override def fetch[_]: IO[Throwable, Completed] = IO.effectAsync[Throwable, Completed] { callback =>
     p.subscribe {
       new JSubscriber[Void] {
 

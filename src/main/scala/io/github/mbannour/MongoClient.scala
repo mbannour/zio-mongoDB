@@ -1,6 +1,5 @@
 package io.github.mbannour
 
-import com.mongodb.client.model.changestream.ChangeStreamDocument
 import com.mongodb.{ClientSessionOptions, ConnectionString, MongoClientSettings, MongoDriverInformation}
 import com.mongodb.reactivestreams.client.{ClientSession, MongoClients, MongoClient => JMongoClient}
 import io.github.mbannour.subscriptions.{ChangeStreamSubscription, ListDatabasesSubscription, ListSubscription, SingleItemSubscription}
@@ -8,7 +7,7 @@ import org.bson
 import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
-import zio.{IO, ZIO}
+import zio.IO
 
 import scala.jdk.CollectionConverters._
 import java.io.Closeable
@@ -43,8 +42,6 @@ object MongoClient {
     apply(MongoClientSettings.builder().applyConnectionString(new ConnectionString(uri))
       .codecRegistry(DEFAULT_CODEC_REGISTRY).build(), mongoDriverInformation)
   }
-
-
 
   /**
    * Create a MongoClient instance from the MongoClientSettings
@@ -121,7 +118,7 @@ case class MongoClient(private val wrapped: JMongoClient) extends Closeable {
    * [[http://docs.mongodb.org/manual/reference/commands/listDatabases List Databases]]
    * @return an iterable containing all the names of all the databases
    */
-  def listDatabaseNames(): IO[Throwable, Iterable[String]] = ListSubscription(wrapped.listDatabaseNames()).subscribe
+  def listDatabaseNames(): IO[Throwable, Iterable[String]] = ListSubscription(wrapped.listDatabaseNames()).fetch
 
   /**
    * Get a list of the database names
@@ -134,17 +131,19 @@ case class MongoClient(private val wrapped: JMongoClient) extends Closeable {
    * @note Requires MongoDB 3.6 or greater
    */
   def listDatabaseNames(clientSession: ClientSession): IO[Throwable, Iterable[String]] =
-    ListSubscription(wrapped.listDatabaseNames(clientSession)).subscribe
+    ListSubscription(wrapped.listDatabaseNames(clientSession)).fetch
 
-
-
-  def listDatabases(): IO[Throwable, Iterable[bson.Document]] =
-    ListDatabasesSubscription(wrapped.listDatabases()).subscribe
-
-
-
-  def listJsonDatabases(): ZIO[Any, Throwable, Iterable[String]] =
-    ListDatabasesSubscription(wrapped.listDatabases()).subscribe.map(_.map(_.toJson))
+  /**
+    * Get a list of the database names
+    *
+    * [[http://docs.mongodb.org/manual/reference/commands/listDatabases List Databases]]
+    *
+    * @return an iterable containing all the names of all the databases
+    * @since 2.2
+    * @note Requires MongoDB 3.6 or greater
+    */
+  def listDatabases(): ListDatabasesSubscription[bson.Document] =
+    ListDatabasesSubscription(wrapped.listDatabases())
 
   /**
    * Gets the list of databases
@@ -155,8 +154,8 @@ case class MongoClient(private val wrapped: JMongoClient) extends Closeable {
    * @since 2.2
    * @note Requires MongoDB 3.6 or greater
    */
-  def listDatabases[TResult](clientSession: ClientSession): IO[Throwable, Iterable[bson.Document]] =
-    ListDatabasesSubscription(wrapped.listDatabases(clientSession)).subscribe
+  def listDatabases[TResult](clientSession: ClientSession): ListDatabasesSubscription[bson.Document] =
+    ListDatabasesSubscription(wrapped.listDatabases(clientSession))
 
   /**
    * Creates a change stream for this client.
@@ -168,32 +167,32 @@ case class MongoClient(private val wrapped: JMongoClient) extends Closeable {
    * @since 1.9
    * @mongodb.server.release 4.0
    */
-    def watch(): IO[Throwable, ChangeStreamDocument[bson.Document]] = ChangeStreamSubscription(wrapped.watch()).subscribe
+    def watch(): ChangeStreamSubscription[bson.Document] = ChangeStreamSubscription(wrapped.watch())
 
     /**
      * Creates a change stream for this collection.
      *
      * @param pipeline the aggregation pipeline to apply to the change stream
      * @tparam C   the target document type of the observable.
-     * @return ???
-     * @since 2.4
+     * @return the change stream iterable
+     * @since 1.9
      * @note Requires MongoDB 4.0 or greater
      *
      */
-    def watch(pipeline: Seq[Bson]): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(wrapped.watch(pipeline.asJava)).subscribe
+    def watch(pipeline: Seq[Bson]): ChangeStreamSubscription[bson.Document] =
+      ChangeStreamSubscription(wrapped.watch(pipeline.asJava))
 
     /**
      * Creates a change stream for this collection.
      *
      * @param clientSession the client session with which to associate this operation
      * @tparam C   the target document type of the observable.
-     * @return ???
-     * @since 2.4
+     * @return the change stream iterable
+     * @since 1.9
      * @note Requires MongoDB 4.0 or greater
      */
-    def watch(clientSession: ClientSession): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(wrapped.watch(clientSession)).subscribe
+    def watch(clientSession: ClientSession): ChangeStreamSubscription[bson.Document] =
+      ChangeStreamSubscription(wrapped.watch(clientSession))
 
     /**
      * Creates a change stream for this collection.
@@ -201,12 +200,12 @@ case class MongoClient(private val wrapped: JMongoClient) extends Closeable {
      * @param clientSession the client session with which to associate this operation
      * @param pipeline the aggregation pipeline to apply to the change stream
      * @tparam C   the target document type of the observable.
-     * @return ???
-     * @since 2.4
+     * @return the change stream iterable
+     * @since 1.9
      * @note Requires MongoDB 4.0 or greater
      */
-    def watch[TResult](clientSession: ClientSession, pipeline: Seq[Bson]): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-      ChangeStreamSubscription(wrapped.watch(clientSession, pipeline.asJava)).subscribe
+    def watch[TResult](clientSession: ClientSession, pipeline: Seq[Bson]): ChangeStreamSubscription[bson.Document] =
+      ChangeStreamSubscription(wrapped.watch(clientSession, pipeline.asJava))
 
 }
 
