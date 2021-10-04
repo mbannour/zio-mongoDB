@@ -1,6 +1,7 @@
 package io.github.mbannour.subscriptions
 
-import io.github.mbannour.{MongoClient, MongoDatabase}
+import io.github.mbannour.MongoTeatClient.mongoTestClient
+import io.github.mbannour.MongoZioClient
 import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
@@ -13,13 +14,15 @@ import zio.test.{DefaultRunnableSpec, TestAspect, ZSpec, assertM}
 
 object DistinctSubscriptionSpec extends DefaultRunnableSpec {
 
-  val mongoClient = MongoClient()
+  val mongoClient = mongoTestClient()
+
+  val test = MongoZioClient()
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
 
-  val database: MongoDatabase = mongoClient.getDatabase("mydb").withCodecRegistry(codecRegistry)
+  val database = mongoClient.getDatabase("mydb").map(_.withCodecRegistry(codecRegistry))
 
-  val collection = database.getCollection[Person]("test")
+  val collection = database.flatMap(_.getCollection[Person]("test"))
 
   override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
     List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(30.seconds))
@@ -73,8 +76,14 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
   }
 
   def close() = {
-    testM("Close database") {
-      assertM(ZIO.effect(mongoClient.close()))(equalTo(()))
+   testM("Close database and clean") {
+     val close =    for {
+        col <- collection
+         _ <- col.drop()
+      _ <- ZIO.effect(mongoClient.close())
+
+      } yield ()
+      assertM(close)(equalTo(()))
     }
   }
 

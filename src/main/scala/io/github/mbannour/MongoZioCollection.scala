@@ -13,6 +13,7 @@ import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
+import org.mongodb.scala.bson.DefaultHelper.DefaultsTo
 import zio.{IO, ZIO}
 
 
@@ -25,7 +26,7 @@ import zio.{IO, ZIO}
   *   The type that this collection will encode documents from and decode documents to.
   * @since 1.0
   */
-case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResult]) {
+case class MongoZioCollection[TResult](private val wrapped: JMongoCollection[TResult]) {
 
   /**
     * Gets the namespace of this collection.
@@ -85,8 +86,8 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @return
     *   a new MongoCollection instance with the different default class
     */
-  def withDocumentClass[C]()(implicit ct: ClassTag[C]): MongoCollection[C] =
-    MongoCollection(wrapped.withDocumentClass(ct.runtimeClass.asInstanceOf[Class[C]]))
+  def withDocumentClass[C]()(implicit e: C DefaultsTo Document, ct: ClassTag[C]): MongoZioCollection[C] =
+    MongoZioCollection(wrapped.withDocumentClass(ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
     * Create a new MongoCollection instance with a different codec registry.
@@ -96,7 +97,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @return
     *   a new MongoCollection instance with the different codec registry
     */
-  def withCodecRegistry(codecRegistry: CodecRegistry): MongoCollection[TResult] = MongoCollection(
+  def withCodecRegistry(codecRegistry: CodecRegistry): MongoZioCollection[TResult] = MongoZioCollection(
     wrapped.withCodecRegistry(codecRegistry)
   )
 
@@ -108,7 +109,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @return
     *   a new MongoCollection instance with the different readPreference
     */
-  def withReadPreference(readPreference: ReadPreference): MongoCollection[TResult] = MongoCollection(
+  def withReadPreference(readPreference: ReadPreference): MongoZioCollection[TResult] = MongoZioCollection(
     wrapped.withReadPreference(readPreference)
   )
 
@@ -120,7 +121,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @return
     *   a new MongoCollection instance with the different writeConcern
     */
-  def withWriteConcern(writeConcern: WriteConcern): MongoCollection[TResult] = MongoCollection(
+  def withWriteConcern(writeConcern: WriteConcern): MongoZioCollection[TResult] = MongoZioCollection(
     wrapped.withWriteConcern(writeConcern)
   )
 
@@ -133,7 +134,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     *   a new MongoCollection instance with the different ReadConcern
     * @since 1.1
     */
-  def withReadConcern(readConcern: ReadConcern): MongoCollection[TResult] = MongoCollection(
+  def withReadConcern(readConcern: ReadConcern): MongoZioCollection[TResult] = MongoZioCollection(
     wrapped.withReadConcern(readConcern)
   )
 
@@ -442,7 +443,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @note
     *   Requires MongoDB 3.6 or greater
     */
-  def find[C](clientSession: ClientSession)(implicit  ct: ClassTag[C]): FindSubscription[C] =
+  def find[C](clientSession: ClientSession)(implicit e: C DefaultsTo Document,  ct: ClassTag[C]): FindSubscription[C] =
     FindSubscription(wrapped.find[C](clientSession, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -461,7 +462,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @note
     *   Requires MongoDB 3.6 or greater
     */
-  def find[C](clientSession: ClientSession, filter: Bson)(implicit ct: ClassTag[C]): FindSubscription[C] =
+  def find[C](clientSession: ClientSession, filter: Bson)(implicit e: C DefaultsTo Document, ct: ClassTag[C]): FindSubscription[C] =
     FindSubscription(wrapped.find(clientSession, filter, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -473,7 +474,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     *   an IO containing the result of the aggregation operation
     *   [[http://docs.mongodb.org/manual/aggregation/Aggregation]]
     */
-  def aggregate[C](pipeline: Seq[Bson])(implicit ct: ClassTag[C]): AggregateSubscription[C] =
+  def aggregate[C](pipeline: Seq[Bson])(implicit e: C DefaultsTo Document, ct: ClassTag[C]): AggregateSubscription[C] =
     AggregateSubscription(wrapped.aggregate(pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -490,7 +491,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @note
     *   Requires MongoDB 3.6 or greater
     */
-  def aggregate[C](clientSession: ClientSession, pipeline: Seq[Bson])(implicit ct: ClassTag[C]): AggregateSubscription[C] =
+  def aggregate[C](clientSession: ClientSession, pipeline: Seq[Bson])(implicit e: C DefaultsTo Document, ct: ClassTag[C]): AggregateSubscription[C] =
     AggregateSubscription(wrapped.aggregate(clientSession, pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -506,7 +507,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     *   an IO containing the result of the map-reduce operation
     *   [[http://docs.mongodb.org/manual/reference/command/mapReduce/map-reduce]]
     */
-  def mapReduce[C](mapFunction: String, reduceFunction: String)(implicit ct: ClassTag[C]): MapReduceSubscription[C] =
+  def mapReduce[C](mapFunction: String, reduceFunction: String)(implicit e: C DefaultsTo Document, ct: ClassTag[C]): MapReduceSubscription[C] =
     MapReduceSubscription(wrapped.mapReduce(mapFunction, reduceFunction, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -527,7 +528,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @note
     *   Requires MongoDB 3.6 or greater
     */
-  def mapReduce[C](clientSession: ClientSession, mapFunction: String, reduceFunction: String)(implicit ct: ClassTag[C]): MapReduceSubscription[C] =
+  def mapReduce[C](clientSession: ClientSession, mapFunction: String, reduceFunction: String)(implicit e: C DefaultsTo Document, ct: ClassTag[C]): MapReduceSubscription[C] =
     MapReduceSubscription(wrapped.mapReduce(clientSession, mapFunction, reduceFunction, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -1753,7 +1754,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @return
     *   the fluent list indexes interface
     */
-  def listIndexes[C]()(implicit ct: ClassTag[C]): ListIndexesSubscription[C] =
+  def listIndexes[C]()(implicit e: C DefaultsTo Document, ct: ClassTag[C]): ListIndexesSubscription[C] =
     ListIndexesSubscription(wrapped.listIndexes(ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
@@ -1770,7 +1771,7 @@ case class MongoCollection[TResult](private val wrapped: JMongoCollection[TResul
     * @note
     *   Requires MongoDB 3.6 or greater
     */
-  def listIndexes[C](clientSession: ClientSession)(implicit ct: ClassTag[C]): ListIndexesSubscription[C] =
+  def listIndexes[C](clientSession: ClientSession)(implicit e: C DefaultsTo Document, ct: ClassTag[C]): ListIndexesSubscription[C] =
     ListIndexesSubscription(wrapped.listIndexes(clientSession, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
