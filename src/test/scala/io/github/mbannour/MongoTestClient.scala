@@ -3,7 +3,7 @@ package io.github.mbannour
 import com.mongodb.{ ConnectionString, MongoClientSettings }
 import io.github.mbannour.MongoZioClient._
 
-object MongoTeatClient {
+object MongoTestClient {
 
   lazy val urlConfig =
     MongoClientSettings.builder().applyConnectionString(new ConnectionString("mongodb://localhost:27017")).build()

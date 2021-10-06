@@ -1,6 +1,6 @@
 package io.github.mbannour.subscriptions
 
-import io.github.mbannour.MongoTeatClient.mongoTestClient
+import io.github.mbannour.MongoTestClient.mongoTestClient
 import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
@@ -155,7 +155,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
         val close = for {
         col <- collection
         _ <- col.drop()
-        _ <- ZIO.effect(mongoClient.close())
+        _ <- mongoClient.pureClose()
 
       } yield ()
       assertM(close)(equalTo(()))

@@ -1,6 +1,6 @@
 package io.github.mbannour.subscriptions
 
-import io.github.mbannour.MongoTeatClient.mongoTestClient
+import io.github.mbannour.MongoTestClient.mongoTestClient
 import io.github.mbannour.MongoZioClient
 import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
@@ -80,7 +80,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
      val close =    for {
         col <- collection
          _ <- col.drop()
-      _ <- ZIO.effect(mongoClient.close())
+      _ <- mongoClient.pureClose()
 
       } yield ()
       assertM(close)(equalTo(()))

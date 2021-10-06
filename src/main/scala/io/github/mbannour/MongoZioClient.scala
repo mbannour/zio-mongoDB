@@ -119,6 +119,13 @@ case class MongoZioClient(private val wrapped: JMongoClient) extends Closeable {
    */
   def close(): Unit = wrapped.close()
 
+
+  /**
+    * Close the client , which will close all underlying cached resources, including, for example,
+    * sockets and background monitoring threads.
+    */
+  def pureClose(): Task[Unit] = ZIO.effect(close())
+
   /**
    * Get a list of the database names
    *
