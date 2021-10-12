@@ -33,6 +33,11 @@ lazy val scalaOptions =
   )
 
 lazy val root = (project in file("."))
+  .aggregate(zioCore, examples)
+
+
+
+lazy val zioCore = (project in file("zio-core"))
   .settings(
     name := "ziomongo",
     scalacOptions ++= scalaOptions,
@@ -53,5 +58,13 @@ lazy val root = (project in file("."))
     Test / testOptions  ++= Seq(Tests.Setup(() => MongoEmbedded.start), Tests.Cleanup(() => MongoEmbedded.stop)),
     Test / parallelExecution := false
   )
+
+lazy val examples = (project in file("zio-examples"))
+  .settings(
+    publish :=(),
+    publishLocal :=(),
+    publishTo := None
+  )
+  .dependsOn(zioCore)
 
 
