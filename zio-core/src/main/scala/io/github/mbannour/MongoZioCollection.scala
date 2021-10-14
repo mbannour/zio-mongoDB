@@ -9,7 +9,7 @@ import io.github.mbannour.result.{Completed, DeleteResult, InsertManyResult, Ins
 import io.github.mbannour.subscriptions.{AggregateSubscription, ChangeStreamSubscription, CompletedSubscription, DistinctSubscription, FindSubscription, ListIndexesSubscription, MapReduceSubscription, SingleItemSubscription}
 import org.bson
 
-import scala.jdk.CollectionConverters._
+import  scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
@@ -139,9 +139,6 @@ case class MongoZioCollection[TResult](private val wrapped: JMongoCollection[TRe
 
   /**
     * Gets an estimate of the count of documents in a collection using collection metadata.
-    *
-    * @param options
-    *   the options describing the count
     * @return
     *   a publisher with a single element indicating the estimated number of documents
     * @since 2.4

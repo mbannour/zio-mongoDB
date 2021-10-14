@@ -1,8 +1,12 @@
 import Dependencies._
-import sbt.Test
+import sbt.{Test, ThisBuild}
+
+lazy val scala212 = "2.12.14"
+lazy val scala213 = "2.13.6"
+lazy val supportedScalaVersions = List(scala212, scala213)
 
 ThisBuild / scalaVersion     := "2.13.6"
-ThisBuild / version          := "0.0.1"
+ThisBuild / version          := "0.0.2-MC2"
 ThisBuild / organization     := "io.github.mbannour"
 ThisBuild / organizationName := "mbannour"
 ThisBuild / description      := "ZIO wrapper for MongoDB Reactive Streams Java Driver"
@@ -11,16 +15,9 @@ ThisBuild / developers       := List(Developer("", "medali", "med.ali.bennour@gm
 ThisBuild / licenses         := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 ThisBuild / homepage         := Some(url("https://github.com/mbannour/zio-mongo"))
 ThisBuild / versionScheme    := Some("early-semver")
-ThisBuild / publishTo := {
-  val nexus = "https://s01.oss.sonatype.org/"
-  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
-ThisBuild / publishMavenStyle := true
 
 lazy val scalaOptions =
   Seq(
-  "-Ymacro-annotations",
   "-encoding", "utf-8",
   "-deprecation",
   "-explaintypes",
@@ -32,7 +29,11 @@ lazy val scalaOptions =
   "-Xcheckinit"
   )
 
-lazy val root = (project in file("."))
+lazy val ziomongo = (project in file("."))
+  .settings(
+    crossScalaVersions := Nil,
+    publish / skip := true
+  )
   .aggregate(zioCore, examples)
 
 
@@ -40,8 +41,14 @@ lazy val root = (project in file("."))
 lazy val zioCore = (project in file("zio-core"))
   .settings(
     name := "ziomongo",
+    ThisBuild / publishTo := {
+      val nexus = "https://s01.oss.sonatype.org/"
+      if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+      else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    },
+    ThisBuild / publishMavenStyle := true,
     scalacOptions ++= scalaOptions,
-    crossScalaVersions := Seq("2.12.15", "2.13.6"),
+    crossScalaVersions := supportedScalaVersions,
     credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
     libraryDependencies ++= Seq(
         mongoScala,
@@ -61,9 +68,8 @@ lazy val zioCore = (project in file("zio-core"))
 
 lazy val examples = (project in file("zio-examples"))
   .settings(
-    publish :=(),
-    publishLocal :=(),
-    publishTo := None
+    crossScalaVersions := Nil,
+    publish / skip := true
   )
   .dependsOn(zioCore)
 

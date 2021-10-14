@@ -9,7 +9,7 @@ import io.github.mbannour.result.Completed
 import io.github.mbannour.subscriptions.{AggregateSubscription, ChangeStreamSubscription, CompletedSubscription, ListCollectionsSubscription, SingleItemSubscription}
 import org.bson
 
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
 import zio.{IO, Task, ZIO}
@@ -299,8 +299,6 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
 
   /**
     * Creates a change stream for this collection.
-    *
-    * @tparam C   the target document type of the observable.
     * @return the change stream Document
     * @note Requires MongoDB 4.0 or greater
     */
@@ -311,7 +309,6 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     * Creates a change stream for this collection.
     *
     * @param pipeline the aggregation pipeline to apply to the change stream
-    * @tparam C   the target document type of the observable.
     * @return the change stream document
     * @note Requires MongoDB 4.0 or greater
     */
@@ -322,7 +319,6 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     * Creates a change stream for this collection.
     *
     * @param clientSession the client session with which to associate this operation
-    * @tparam C   the target document type of the observable.
     * @return the change stream document
     * @note Requires MongoDB 4.0 or greater
     */
@@ -334,7 +330,6 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     *
     * @param clientSession the client session with which to associate this operation
     * @param pipeline the aggregation pipeline to apply to the change stream
-    * @tparam C   the target document type of the observable.
     * @return the change stream document
     * @note Requires MongoDB 4.0 or greater
     */

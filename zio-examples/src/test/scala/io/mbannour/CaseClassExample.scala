@@ -1,7 +1,7 @@
 package io.mbannour
 
 import io.github.mbannour.MongoZioClient
-import zio.{ExitCode, URIO}
+import zio.{ExitCode, Task, URIO, ZIO}
 import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
@@ -40,7 +40,9 @@ object CaseClassExample extends zio.App {
       _ <- col.deleteOne(equal("name", "Zaphod"))
       count <- col.countDocuments()
       person <- col.find(equal("name", "Jean")).first().headOption
-    } yield (println(count, person))
+      _  <- Task(println(s"Persons count: $count"))
+      _  <- Task(println( s"The updated person with name Jean is: $person"))
+    } yield ()
 
   }
 

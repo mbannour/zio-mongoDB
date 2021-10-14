@@ -1,6 +1,6 @@
 package io.github.mbannour.result
 
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 import com.mongodb.client.result.{InsertManyResult => JInsertManyResult}
 import org.bson.BsonValue
 

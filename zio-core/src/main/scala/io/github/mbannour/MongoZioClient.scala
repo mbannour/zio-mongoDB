@@ -9,7 +9,7 @@ import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
 import zio.{IO, Task, ZIO, ZManaged}
 
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 import java.io.Closeable
 
 
@@ -170,10 +170,7 @@ case class MongoZioClient(private val wrapped: JMongoClient) extends Closeable {
 
   /**
     * Creates a change stream for this client.
-    *
-    * @param resultClass the class to decode each document into
-    * @param <TResult>   the target document type of the iterable.
-    * @return the change stream iterable
+    * @return the ChangeStreamSubscription
     * @mongodb.driver.dochub core/changestreams Change Streams
     * @mongodb.server.release 4.0
     */
@@ -183,7 +180,6 @@ case class MongoZioClient(private val wrapped: JMongoClient) extends Closeable {
     * Creates a change stream for this collection.
     *
     * @param pipeline the aggregation pipeline to apply to the change stream
-    * @tparam C   the target document type of the observable.
     * @return the change stream iterable
     * @note Requires MongoDB 4.0 or greater
     *
@@ -195,7 +191,6 @@ case class MongoZioClient(private val wrapped: JMongoClient) extends Closeable {
     * Creates a change stream for this collection.
     *
     * @param clientSession the client session with which to associate this operation
-    * @tparam C   the target document type of the observable.
     * @return the change stream iterable
     * @note Requires MongoDB 4.0 or greater
     */
@@ -207,7 +202,6 @@ case class MongoZioClient(private val wrapped: JMongoClient) extends Closeable {
     *
     * @param clientSession the client session with which to associate this operation
     * @param pipeline the aggregation pipeline to apply to the change stream
-    * @tparam C   the target document type of the observable.
     * @return the change stream iterable
     * @note Requires MongoDB 4.0 or greater
     */
