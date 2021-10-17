@@ -4,7 +4,6 @@ import com.mongodb.client.model.Collation
 import com.mongodb.client.model.changestream.{ChangeStreamDocument, FullDocument}
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher
 import org.bson.{BsonDocument, BsonTimestamp}
-import org.reactivestreams.{Subscriber => JSubscriber, Subscription => JSubscription}
 import zio.IO
 
 import java.util.concurrent.TimeUnit
@@ -14,11 +13,11 @@ case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subs
   override def fetch[_]: IO[Throwable, ChangeStreamDocument[T]] = IO.effectAsync[Throwable, ChangeStreamDocument[T]] {
     callback =>
       p.subscribe {
-        new JSubscriber[ChangeStreamDocument[T]] {
+        new JavaSubscriber[ChangeStreamDocument[T]] {
           @volatile
           var docStream: ChangeStreamDocument[T] = _
 
-          override def onSubscribe(s: JSubscription): Unit = s.request(Long.MaxValue)
+          override def onSubscribe(s: JavaSubscription): Unit = s.request(Long.MaxValue)
 
           override def onError(t: Throwable): Unit = callback(IO.fail(t))
 

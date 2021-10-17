@@ -1,17 +1,16 @@
 package io.github.mbannour.subscriptions
 
-import org.reactivestreams.{Subscription => JSubscription, Publisher => JPublisher, Subscriber => JSubscriber}
-import zio.IO
+import zio.{IO, Ref}
 
-case class SingleItemSubscription[T](p: JPublisher[T]) extends Subscription[T] {
+case class SingleItemSubscription[T](p: JavaPublisher[T]) extends Subscription[T] {
 
   override def fetch[_]: IO[Throwable, T] = IO.effectAsync[Throwable, T] { callback =>
     p.subscribe {
-      new JSubscriber[T] {
+      new JavaSubscriber[T] {
         @volatile
         var item: T = _
 
-        override def onSubscribe(s: JSubscription): Unit = s.request(1)
+        override def onSubscribe(s: JavaSubscription): Unit = s.request(1)
 
         override def onNext(t: T): Unit = item = t
 
@@ -24,11 +23,11 @@ case class SingleItemSubscription[T](p: JPublisher[T]) extends Subscription[T] {
 
   def headOption[_]: IO[Throwable, Option[T]] = IO.effectAsync[Throwable, Option[T]] { callback =>
     p.subscribe {
-      new JSubscriber[T] {
+      new JavaSubscriber[T] {
         @volatile
         var item: T = _
 
-        override def onSubscribe(s: JSubscription): Unit = s.request(1)
+        override def onSubscribe(s: JavaSubscription): Unit = s.request(1)
 
         override def onNext(t: T): Unit = item = t
 

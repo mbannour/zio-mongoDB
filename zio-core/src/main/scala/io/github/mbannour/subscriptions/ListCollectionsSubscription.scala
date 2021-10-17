@@ -2,7 +2,7 @@ package io.github.mbannour.subscriptions
 
 import com.mongodb.reactivestreams.client.ListCollectionsPublisher
 import org.bson.conversions.Bson
-import org.reactivestreams.{Subscriber => JSubscriber, Subscription => JSubscription}
+import org.reactivestreams.{Subscription => JSubscription}
 import zio.IO
 
 import java.util.concurrent.TimeUnit
@@ -12,7 +12,7 @@ case class ListCollectionsSubscription[T](p: ListCollectionsPublisher[T]) extend
 
   override def fetch[_]: IO[Throwable, Iterable[T]] = IO.effectAsync[Throwable, Iterable[T]] { callback =>
     p.subscribe {
-      new JSubscriber[T] {
+      new JavaSubscriber[T] {
 
         val items = new ArrayBuffer[T]()
 

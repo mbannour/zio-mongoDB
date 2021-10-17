@@ -5,7 +5,7 @@ import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.model.{Filters, Projections, Sorts}
-import zio.{ExecutionStrategy, ZIO}
+import zio.ExecutionStrategy
 import zio.duration.durationInt
 import zio.test.Assertion.equalTo
 import zio.test.environment.TestEnvironment

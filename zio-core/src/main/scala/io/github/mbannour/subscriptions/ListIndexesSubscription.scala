@@ -1,7 +1,6 @@
 package io.github.mbannour.subscriptions
 
 import com.mongodb.reactivestreams.client.ListIndexesPublisher
-import org.reactivestreams.{Subscriber => JSubscriber, Subscription => JSubscription}
 import zio.IO
 
 import java.util.concurrent.TimeUnit
@@ -12,11 +11,11 @@ case class ListIndexesSubscription[T](p: ListIndexesPublisher[T]) extends Subscr
   override def fetch[_]: IO[Throwable, Iterable[T]] =
     IO.effectAsync[Throwable, Iterable[T]] { callback =>
       p.subscribe {
-        new JSubscriber[T] {
+        new JavaSubscriber[T] {
 
           val items = new ArrayBuffer[T]()
 
-          override def onSubscribe(s: JSubscription): Unit = s.request(Long.MaxValue)
+          override def onSubscribe(s: JavaSubscription): Unit = s.request(Long.MaxValue)
 
           override def onNext(t: T): Unit = items += t
 
