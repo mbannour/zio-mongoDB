@@ -15,55 +15,6 @@ import java.io.Closeable
 import scala.reflect.ClassTag
 
 
-object MongoZioClient {
-
-  /**
-    * Create a default MongoZioClient at localhost:27017
-    */
-  def apply(): Task[MongoZioClient] = apply("mongodb://localhost:27017")
-
-  /**
-    * Create a MongoZioClient instance from a connection string uri
-    */
-  def apply(uri: String): Task[MongoZioClient] = MongoZioClient(uri, None)
-
-
-  /**
-    * Create an auto closable MongoZioClient instance from a connection string uri
-    */
-  def autoCloseableClient(uri: String): ZManaged[Any, Throwable, MongoZioClient] = ZManaged.fromAutoCloseable(apply(uri))
-
-  /**
-    * Create a MongoZioClient instance from a connection string uri
-    */
-  def apply(uri: String, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] = {
-    apply(MongoClientSettings.builder().applyConnectionString(new ConnectionString(uri))
-      .codecRegistry(DEFAULT_CODEC_REGISTRY).build(), mongoDriverInformation)
-  }
-
-  /**
-    * Create a MongoZioClient instance from the MongoClientSettings
-    */
-  def apply(clientSettings: MongoClientSettings): Task[MongoZioClient] = MongoZioClient(clientSettings, None)
-
-  /**
-    * Create a MongoZioClient instance from the MongoClientSettings
-    */
-  def apply(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] =
-    ZIO.effect(createMongoClient(clientSettings, mongoDriverInformation))
-
-
-  private[mbannour] def createMongoClient(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]) = {
-    val builder = mongoDriverInformation match {
-      case Some(info) => MongoDriverInformation.builder(info)
-      case None => MongoDriverInformation.builder()
-    }
-    MongoZioClient(MongoClients.create(clientSettings, builder.build()))
-  }
-
-  val DEFAULT_CODEC_REGISTRY: CodecRegistry = fromRegistries(MongoClients.getDefaultCodecRegistry)
-}
-
 case class MongoZioClient(private val wrapped: JavaMongoClient) extends Closeable {
   /**
     * Creates a client session.
@@ -142,5 +93,54 @@ case class MongoZioClient(private val wrapped: JavaMongoClient) extends Closeabl
   def watch[T](clientSession: ClientSession, pipeline: Seq[Bson])(implicit e: T MapTo Document, ct: ClassTag[T]): ChangeStreamSubscription[T] =
     ChangeStreamSubscription(wrapped.watch(clientSession, pipeline.asJava, clazz(ct)))
 
+}
+
+object MongoZioClient {
+
+  /**
+    * Create a default MongoZioClient at localhost:27017
+    */
+  def apply(): Task[MongoZioClient] = apply("mongodb://localhost:27017")
+
+  /**
+    * Create a MongoZioClient instance from a connection string uri
+    */
+  def apply(uri: String): Task[MongoZioClient] = MongoZioClient(uri, None)
+
+
+  /**
+    * Create an auto closable MongoZioClient instance from a connection string uri
+    */
+  def autoCloseableClient(uri: String): ZManaged[Any, Throwable, MongoZioClient] = ZManaged.fromAutoCloseable(apply(uri))
+
+  /**
+    * Create a MongoZioClient instance from a connection string uri
+    */
+  def apply(uri: String, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] = {
+    apply(MongoClientSettings.builder().applyConnectionString(new ConnectionString(uri))
+      .codecRegistry(DEFAULT_CODEC_REGISTRY).build(), mongoDriverInformation)
+  }
+
+  /**
+    * Create a MongoZioClient instance from the MongoClientSettings
+    */
+  def apply(clientSettings: MongoClientSettings): Task[MongoZioClient] = MongoZioClient(clientSettings, None)
+
+  /**
+    * Create a MongoZioClient instance from the MongoClientSettings
+    */
+  def apply(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] =
+    ZIO.effect(createMongoClient(clientSettings, mongoDriverInformation))
+
+
+  private[mbannour] def createMongoClient(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]) = {
+    val builder = mongoDriverInformation match {
+      case Some(info) => MongoDriverInformation.builder(info)
+      case None => MongoDriverInformation.builder()
+    }
+    MongoZioClient(MongoClients.create(clientSettings, builder.build()))
+  }
+
+  val DEFAULT_CODEC_REGISTRY: CodecRegistry = fromRegistries(MongoClients.getDefaultCodecRegistry)
 }
 

@@ -1,5 +1,5 @@
 # zio-mongo
-ZIO wrapper for MongoDB Reactive Streams Java Driver and MongoDb scala Driver
+ZIO wrapper for MongoDB Reactive Streams Java Driver.
 
 ### Dependencies
 
@@ -59,7 +59,6 @@ object CaseClassExample extends zio.App {
   }
 
   override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] = app.exitCode
-
-
+  
 }
 ```

@@ -160,7 +160,7 @@ case class AggregateSubscription[T](p: AggregatePublisher[T]) extends Subscripti
     * @mongodb.server.release 3.6
     */
   def explain[E]()(implicit e: E MapTo Document, ct: ClassTag[E]): SingleItemSubscription[E] = SingleItemSubscription(
-    p.explain(ct.runtimeClass.asInstanceOf[Class[E]])
+    p.explain(clazz(ct))
   )
 
   /**
@@ -175,7 +175,7 @@ case class AggregateSubscription[T](p: AggregatePublisher[T]) extends Subscripti
     * @mongodb.server.release 3.6
     */
   def explain[E](verbosity: ExplainVerbosity)(implicit e: E MapTo Document, ct: ClassTag[E]): SingleItemSubscription[E] = SingleItemSubscription(
-    p.explain(ct.runtimeClass.asInstanceOf[Class[E]], verbosity)
+    p.explain(clazz(ct), verbosity)
   )
 
 }

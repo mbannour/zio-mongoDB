@@ -3,10 +3,13 @@ package io.github.mbannour.subscriptions
 import com.mongodb.client.model.Collation
 import com.mongodb.client.model.changestream.{ChangeStreamDocument, FullDocument}
 import com.mongodb.reactivestreams.client.ChangeStreamPublisher
+import io.github.mbannour.DefaultHelper.MapTo
 import org.bson.{BsonDocument, BsonTimestamp}
+import org.mongodb.scala.bson.collection.immutable.Document
 import zio.IO
 
 import java.util.concurrent.TimeUnit
+import scala.reflect.ClassTag
 
 case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subscription[ChangeStreamDocument[T]] {
 
@@ -40,7 +43,8 @@ case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subs
 
   def collation(collation: Collation): ChangeStreamSubscription[T] = this.copy(p.collation(collation))
 
-  def withDocumentClass[TDocument](clazz: Class[TDocument]): SingleItemSubscription[TDocument] = SingleItemSubscription(p.withDocumentClass(clazz))
+  def withDocumentClass[TDocument](implicit e: TDocument MapTo Document, ct: ClassTag[TDocument]): SingleItemSubscription[TDocument] =
+    SingleItemSubscription(p.withDocumentClass(clazz(ct)))
 
   def batchSize(batchSize: Int): ChangeStreamSubscription[T] = this.copy(p.batchSize(batchSize))
 
