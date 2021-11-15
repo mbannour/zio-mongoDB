@@ -53,7 +53,7 @@ case class AggregateSubscription[T](p: AggregatePublisher[T]) extends Subscripti
   def maxTime(maxTime: Long, timeUnit: TimeUnit): AggregateSubscription[T] = this.copy(p.maxTime(maxTime, timeUnit))
 
   /**
-    * The maximum amount of time for the server to wait on new documents to satisfy a {@code $changeStream} aggregation.
+    * The maximum amount of time for the server to wait on new documents to satisfy a aggregation.
     *
     * A zero value will be ignored.
     *

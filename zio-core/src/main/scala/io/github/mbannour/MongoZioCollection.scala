@@ -9,7 +9,7 @@ import io.github.mbannour.result.{Completed, DeleteResult, InsertManyResult, Ins
 import io.github.mbannour.subscriptions._
 import org.bson
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson

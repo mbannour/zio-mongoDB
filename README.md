@@ -5,7 +5,7 @@ ZIO wrapper for MongoDB Reactive Streams Java Driver.
 
 Support scala `12.12` and `12.13`
 ```scala
-libraryDependencies += "io.github.mbannour" %% "ziomongo" % "0.0.2-MC2"
+libraryDependencies += "io.github.mbannour" %% "ziomongo" % "0.0.2"
 
 ```
 

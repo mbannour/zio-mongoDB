@@ -9,7 +9,7 @@ import io.github.mbannour.result.Completed
 import io.github.mbannour.subscriptions.{AggregateSubscription, ChangeStreamSubscription, CompletedSubscription, ListCollectionsSubscription, SingleItemSubscription}
 import org.bson
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
 import org.mongodb.scala.bson.collection.immutable.Document

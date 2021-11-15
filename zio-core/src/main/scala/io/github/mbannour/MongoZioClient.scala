@@ -10,7 +10,7 @@ import org.bson.conversions.Bson
 import org.mongodb.scala.bson.collection.immutable.Document
 import zio.{IO, Task, ZIO, ZManaged}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.io.Closeable
 import scala.reflect.ClassTag
 
