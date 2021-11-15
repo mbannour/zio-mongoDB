@@ -25,14 +25,14 @@ case class UpdateResult(private val wrapper: JUpdateResult) {
     *
     * @return a Task of the number of documents matched
     */
-  def getMatchedCount: Task[Long] = IO.effect(wrapper.getMatchedCount())
+  def getMatchedCount: Task[Long] = IO.attempt(wrapper.getMatchedCount())
 
   /**
     * Gets the number of documents modified by the update.
     *
     * @return a Task the number of documents modified
     */
-  def getModifiedCount:Task[Long]=  IO.effect(wrapper.getModifiedCount())
+  def getModifiedCount:Task[Long]=  IO.attempt(wrapper.getModifiedCount())
 
   /**
     * If the replace resulted in an inserted document, gets the _id of the inserted document, otherwise None.

@@ -31,7 +31,7 @@ case class MongoZioClient(private val wrapped: JavaMongoClient) extends Closeabl
   /**
     * Gets the database with the given name.
     */
-  def getDatabase(name: String): Task[MongoZioDatabase] = ZIO.effect(MongoZioDatabase(wrapped.getDatabase(name)))
+  def getDatabase(name: String): Task[MongoZioDatabase] = ZIO.attempt(MongoZioDatabase(wrapped.getDatabase(name)))
 
   /**
     * Close the client, which will close all underlying cached resources, including, for example,
@@ -44,7 +44,7 @@ case class MongoZioClient(private val wrapped: JavaMongoClient) extends Closeabl
     * Close the client , which will close all underlying cached resources, including, for example,
     * sockets and background monitoring threads.
     */
-  def pureClose(): Task[Unit] = ZIO.effect(close())
+  def pureClose(): Task[Unit] = ZIO.attempt(close())
 
   /**
     * Get a list of the database names
@@ -130,7 +130,7 @@ object MongoZioClient {
     * Create a MongoZioClient instance from the MongoClientSettings
     */
   def apply(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] =
-    ZIO.effect(createMongoClient(clientSettings, mongoDriverInformation))
+    ZIO.attempt(createMongoClient(clientSettings, mongoDriverInformation))
 
 
   private[mbannour] def createMongoClient(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]) = {

@@ -81,7 +81,7 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     *
     */
   def getCollection[TResult](collectionName: String)(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): Task[MongoZioCollection[TResult]] =
-    ZIO.effect(MongoZioCollection(javaMongoDatabase.getCollection(collectionName, clazz(ct))))
+    ZIO.attempt(MongoZioCollection(javaMongoDatabase.getCollection(collectionName, clazz(ct))))
 
   /**
     * Executes command in the context of the current database.

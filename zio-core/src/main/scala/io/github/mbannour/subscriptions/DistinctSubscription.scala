@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 case class DistinctSubscription[T](p: DistinctPublisher[T]) extends Subscription[Iterable[T]] {
 
   override def fetch[_]: IO[Throwable, Iterable[T]] =
-    IO.effectAsync[Throwable, Iterable[T]] { callback =>
+    IO.async[Throwable, Iterable[T]] { callback =>
       p.subscribe {
         new JavaSubscriber[T] {
           val items = new ArrayBuffer[T]()

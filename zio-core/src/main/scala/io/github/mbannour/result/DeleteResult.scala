@@ -24,5 +24,5 @@ case class DeleteResult(wrapper: JDeleteResult)  {
     *
     * @return a Task of the number of documents deleted
     */
-  def getDeletedCount: Task[Long] = IO.effect(wrapper.getDeletedCount())
+  def getDeletedCount: Task[Long] = IO.attempt(wrapper.getDeletedCount())
 }

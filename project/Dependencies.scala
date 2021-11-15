@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   lazy val mongoVersion      = "4.3.1"
-  lazy val zioVersion        = "1.0.11"
+  lazy val zioVersion        = "2.0.0-M1"
   lazy val scalaTestVersion  = "3.2.8"
   lazy val scalaMongoVersion = "2.9.0"
   lazy val scalaMockVersion  = "4.3.0"

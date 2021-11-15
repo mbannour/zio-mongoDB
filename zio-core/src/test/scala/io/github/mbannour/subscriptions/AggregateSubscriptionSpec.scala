@@ -9,8 +9,7 @@ import org.mongodb.scala.bson.{BsonArray, BsonInt32, BsonInt64, BsonString, Obje
 import org.mongodb.scala.bson.codecs.Macros._
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.{Aggregates, Filters, Projections}
-import zio.{ExecutionStrategy, ZIO}
-import zio.duration.durationInt
+import zio.{Duration, ExecutionStrategy, ZIO}
 import zio.test.Assertion.equalTo
 import zio.test.environment.TestEnvironment
 import zio.test.{DefaultRunnableSpec, TestAspect, ZSpec, assertM}
@@ -109,7 +108,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
   val collection = database.flatMap(_.getCollection[Company]("test"))
 
   override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
-    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(30.seconds))
+    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.Infinity))
 
   override def spec: ZSpec[TestEnvironment, Any] = suite("AggregateSubscriptionSpec")(
     initialCount(),
@@ -126,7 +125,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
       count <- col.countDocuments()
     } yield count
 
-    testM("Count Documents") {
+    test("Count Documents") {
       assertM(count)(equalTo(0L))
     }
   }
@@ -138,7 +137,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
       count <- col.countDocuments()
     } yield count
 
-    testM("Insert Documents") {
+    test("Insert Documents") {
       assertM(count)(equalTo(10L))
     }
   }
@@ -163,7 +162,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
         .fetch
     } yield res
 
-    testM("Find sorted company names founded in 2004 and limited to two") {
+    test("Find sorted company names founded in 2004 and limited to two") {
       assertM(aggregatedResult)(
         equalTo(
           Seq(
@@ -189,7 +188,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
         )
         .fetch
     } yield res
-    testM("Find sorted company names founded in 2004 and limited to two") {
+    test("Find sorted company names founded in 2004 and limited to two") {
       assertM(aggregatedResult)(
         equalTo(
           Seq(
@@ -221,7 +220,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
         .fetch
     } yield result
 
-    testM("Find company names , funding rounds year and funding rounds amount limited to 3") {
+    test("Find company names , funding rounds year and funding rounds amount limited to 3") {
       assertM(aggregatedResult)(equalTo(Seq(
         Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2004), "amount" -> BsonInt64(8500000))),
         Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2005), "amount" -> BsonInt64(2800000))),
@@ -231,7 +230,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
   }
 
   def closeConnection() =
-    testM("Close and clean database") {
+    test("Close and clean database") {
       val close = for {
         col <- collection
         _   <- col.drop()

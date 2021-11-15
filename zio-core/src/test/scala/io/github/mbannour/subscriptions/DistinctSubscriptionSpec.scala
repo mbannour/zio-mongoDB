@@ -6,8 +6,7 @@ import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.model.Filters
-import zio.ExecutionStrategy
-import zio.duration.durationInt
+import zio.{Duration, ExecutionStrategy}
 import zio.test.Assertion.equalTo
 import zio.test.environment.TestEnvironment
 import zio.test.{DefaultRunnableSpec, TestAspect, ZSpec, assertM}
@@ -23,7 +22,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
   val collection = database.flatMap(_.getCollection[Person]("test"))
 
   override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
-    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(30.seconds))
+    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.fromMillis(30000)))
 
   override def spec: ZSpec[TestEnvironment, Any] = suite("DistinctSubscriptionSpec")(
     distinctDocuments(),
@@ -46,7 +45,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
       doc <- col.distinct[String]("name").fetch
     } yield doc
 
-    testM("Get distinct Persons by name") {
+    test("Get distinct Persons by name") {
       assertM(names)(equalTo(Seq("John", "Carmen", "Yasmin")))
     }
   }
@@ -57,7 +56,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
       doc <- col.distinct[String]("name").first().fetch
     } yield doc
 
-    testM("Get first person Persons by name") {
+    test("Get first person Persons by name") {
       assertM(names)(equalTo("John"))
     }
   }
@@ -68,13 +67,13 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
       doc <- col.distinct[String]("name").filter(Filters.gt("age", 30)).fetch
     } yield doc
 
-    testM("Get filtered persons with age greater than 30") {
+    test("Get filtered persons with age greater than 30") {
       assertM(names)(equalTo(Seq("Carmen")))
     }
   }
 
   def close() = {
-    testM("Close database and clean") {
+    test("Close database and clean") {
       val close =    for {
         col <- collection
         _ <- col.drop()

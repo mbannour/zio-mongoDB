@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 
 case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subscription[ChangeStreamDocument[T]] {
 
-  override def fetch[_]: IO[Throwable, ChangeStreamDocument[T]] = IO.effectAsync[Throwable, ChangeStreamDocument[T]] {
+  override def fetch[_]: IO[Throwable, ChangeStreamDocument[T]] = IO.async[Throwable, ChangeStreamDocument[T]] {
     callback =>
       p.subscribe {
         new JavaSubscriber[ChangeStreamDocument[T]] {

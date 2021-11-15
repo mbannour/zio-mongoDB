@@ -29,5 +29,5 @@ case class InsertManyResult(private val wrapper: JInsertManyResult) {
     *
     * @return A Task of type map of the index of the inserted document to the id of the inserted document.
     */
-  def getInsertedIds: Task[Map[Integer, BsonValue]] = IO.effect(wrapper.getInsertedIds.asScala.toMap)
+  def getInsertedIds: Task[Map[Integer, BsonValue]] = IO.attempt(wrapper.getInsertedIds.asScala.toMap)
 }
