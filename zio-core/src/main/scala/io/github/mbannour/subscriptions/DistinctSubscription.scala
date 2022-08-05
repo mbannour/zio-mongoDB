@@ -3,7 +3,7 @@ package io.github.mbannour.subscriptions
 import com.mongodb.client.model.Collation
 import com.mongodb.reactivestreams.client.DistinctPublisher
 import org.bson.conversions.Bson
-import zio.IO
+import zio._
 
 import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ArrayBuffer
@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 case class DistinctSubscription[T](p: DistinctPublisher[T]) extends Subscription[Iterable[T]] {
 
   override def fetch[_]: IO[Throwable, Iterable[T]] =
-    IO.async[Throwable, Iterable[T]] { callback =>
+    ZIO.async[Any, Throwable, Iterable[T]] { callback =>
       p.subscribe {
         new JavaSubscriber[T] {
           val items = new ArrayBuffer[T]()
@@ -20,9 +20,9 @@ case class DistinctSubscription[T](p: DistinctPublisher[T]) extends Subscription
 
           override def onNext(t: T): Unit = items += t
 
-          override def onError(t: Throwable): Unit = callback(IO.fail(t))
+          override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-          override def onComplete(): Unit = callback(IO.succeed(items.toList))
+          override def onComplete(): Unit = callback(ZIO.succeed(items.toList))
         }
       }
     }

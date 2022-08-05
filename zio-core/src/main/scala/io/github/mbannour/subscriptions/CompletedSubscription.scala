@@ -1,11 +1,11 @@
 package io.github.mbannour.subscriptions
 
 import io.github.mbannour.result.Completed
-import zio.IO
+import zio._
 
 case class CompletedSubscription(p: JavaPublisher[Void]) extends Subscription[Completed] {
 
-  override def fetch[_]: IO[Throwable, Completed] = IO.async[Throwable, Completed] { callback =>
+  override def fetch[_]: IO[Throwable, Completed] = ZIO.async[Any, Throwable, Completed] { callback =>
     p.subscribe {
       new JavaSubscriber[Void] {
 
@@ -13,9 +13,9 @@ case class CompletedSubscription(p: JavaPublisher[Void]) extends Subscription[Co
 
         override def onNext(t: Void): Unit = ()
 
-        override def onError(t: Throwable): Unit = callback(IO.fail(t))
+        override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-        override def onComplete(): Unit = callback(IO.succeed(Completed()))
+        override def onComplete(): Unit = callback(ZIO.succeed(Completed()))
       }
     }
   }

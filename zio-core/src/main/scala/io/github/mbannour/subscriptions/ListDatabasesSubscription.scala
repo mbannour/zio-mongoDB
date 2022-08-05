@@ -2,7 +2,7 @@ package io.github.mbannour.subscriptions
 
 import com.mongodb.reactivestreams.client.ListDatabasesPublisher
 import org.bson.conversions.Bson
-import zio.IO
+import zio._
 
 import java.lang
 import java.util.concurrent.TimeUnit
@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 case class ListDatabasesSubscription[T](p: ListDatabasesPublisher[T]) extends Subscription[Iterable[T]] {
 
   override def fetch[_]: IO[Throwable, Iterable[T]] =
-    IO.async[Throwable, Iterable[T]] { callback =>
+    ZIO.async[Any, Throwable, Iterable[T]] { callback =>
       p.subscribe {
         new JavaSubscriber[T] {
 
@@ -21,9 +21,9 @@ case class ListDatabasesSubscription[T](p: ListDatabasesPublisher[T]) extends Su
 
           override def onNext(t: T): Unit = items += t
 
-          override def onError(t: Throwable): Unit = callback(IO.fail(t))
+          override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-          override def onComplete(): Unit = callback(IO.succeed(items.toSeq))
+          override def onComplete(): Unit = callback(ZIO.succeed(items.toSeq))
         }
       }
     }

@@ -1,7 +1,7 @@
 package io.github.mbannour.result
 
 import com.mongodb.client.result.{DeleteResult => JDeleteResult}
-import zio.{IO, Task}
+import zio._
 
 /**
   * The result of a delete operation. If the delete was unacknowledged, then {@code wasAcknowledged} will return false and all other methods
@@ -24,5 +24,5 @@ case class DeleteResult(wrapper: JDeleteResult)  {
     *
     * @return a Task of the number of documents deleted
     */
-  def getDeletedCount: Task[Long] = IO.attempt(wrapper.getDeletedCount())
+  def getDeletedCount: Task[Long] = ZIO.attempt(wrapper.getDeletedCount())
 }

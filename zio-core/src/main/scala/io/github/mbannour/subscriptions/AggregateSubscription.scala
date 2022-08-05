@@ -6,7 +6,7 @@ import com.mongodb.reactivestreams.client.AggregatePublisher
 import io.github.mbannour.DefaultHelper.MapTo
 import org.bson.conversions.Bson
 import org.mongodb.scala.bson.collection.immutable.Document
-import zio.IO
+import zio._
 
 import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ArrayBuffer
@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
 case class AggregateSubscription[T](p: AggregatePublisher[T]) extends Subscription[Iterable[T]] {
 
   override def fetch[_]: IO[Throwable, Iterable[T]] =
-    IO.async[Throwable, Iterable[T]] { callback =>
+    ZIO.async[Any, Throwable, Iterable[T]] { callback =>
       p.subscribe {
         new JavaSubscriber[T] {
 
@@ -25,9 +25,9 @@ case class AggregateSubscription[T](p: AggregatePublisher[T]) extends Subscripti
 
           override def onNext(t: T): Unit = items += t
 
-          override def onError(t: Throwable): Unit = callback(IO.fail(t))
+          override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-          override def onComplete(): Unit = callback(IO.succeed(items.toSeq))
+          override def onComplete(): Unit = callback(ZIO.succeed(items.toSeq))
         }
       }
     }

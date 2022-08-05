@@ -8,12 +8,11 @@ import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
 import org.mongodb.scala.bson.collection.immutable.Document
-import zio.{IO, Task, ZIO, ZManaged}
+import zio._
 
 import scala.jdk.CollectionConverters._
 import java.io.Closeable
 import scala.reflect.ClassTag
-
 
 case class MongoZioClient(private val wrapped: JavaMongoClient) extends Closeable {
   /**
@@ -111,7 +110,7 @@ object MongoZioClient {
   /**
     * Create an auto closable MongoZioClient instance from a connection string uri
     */
-  def autoCloseableClient(uri: String): ZManaged[Any, Throwable, MongoZioClient] = ZManaged.fromAutoCloseable(apply(uri))
+  def autoCloseableClient(uri: String): ZIO[Scope, Throwable, MongoZioClient] = ZIO.fromAutoCloseable(apply(uri))
 
   /**
     * Create a MongoZioClient instance from a connection string uri

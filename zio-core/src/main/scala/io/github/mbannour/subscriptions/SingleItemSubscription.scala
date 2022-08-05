@@ -1,10 +1,10 @@
 package io.github.mbannour.subscriptions
 
-import zio.{IO, Ref}
+import zio._
 
 case class SingleItemSubscription[T](p: JavaPublisher[T]) extends Subscription[T] {
 
-  override def fetch[_]: IO[Throwable, T] = IO.async[Throwable, T] { callback =>
+  override def fetch[_]: IO[Throwable, T] = ZIO.async[Any, Throwable, T] { callback =>
     p.subscribe {
       new JavaSubscriber[T] {
         @volatile
@@ -14,14 +14,14 @@ case class SingleItemSubscription[T](p: JavaPublisher[T]) extends Subscription[T
 
         override def onNext(t: T): Unit = item = t
 
-        override def onError(t: Throwable): Unit = callback(IO.fail(t))
+        override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-        override def onComplete(): Unit = callback(IO.succeed(item))
+        override def onComplete(): Unit = callback(ZIO.succeed(item))
       }
     }
   }
 
-  def headOption[_]: IO[Throwable, Option[T]] = IO.async[Throwable, Option[T]] { callback =>
+  def headOption[_]: IO[Throwable, Option[T]] = ZIO.async[Any, Throwable, Option[T]] { callback =>
     p.subscribe {
       new JavaSubscriber[T] {
         @volatile
@@ -31,9 +31,9 @@ case class SingleItemSubscription[T](p: JavaPublisher[T]) extends Subscription[T
 
         override def onNext(t: T): Unit = item = t
 
-        override def onError(t: Throwable): Unit = callback(IO.fail(t))
+        override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-        override def onComplete(): Unit = callback(IO.succeed(Option(item)))
+        override def onComplete(): Unit = callback(ZIO.succeed(Option(item)))
       }
     }
   }

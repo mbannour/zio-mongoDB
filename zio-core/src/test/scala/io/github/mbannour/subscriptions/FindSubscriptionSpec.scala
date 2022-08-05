@@ -5,12 +5,11 @@ import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.model.{Filters, Projections, Sorts}
-import zio.{Duration, ExecutionStrategy}
+import zio._
 import zio.test.Assertion.equalTo
-import zio.test.environment.TestEnvironment
-import zio.test.{DefaultRunnableSpec, Spec, TestAspect, TestFailure, TestSuccess, assertM}
+import zio.test._
 
-object FindSubscriptionSpec extends DefaultRunnableSpec {
+object FindSubscriptionSpec extends ZIOSpecDefault {
 
   val mongoClient = mongoTestClient()
 
@@ -20,10 +19,10 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
 
   val collection = database.flatMap(_.getCollection[Document]("test"))
 
-  override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
-    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.fromMillis(30000)))
+  override def aspects =
+    Chunk(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.fromMillis(30000)))
 
-  def spec: Spec[TestEnvironment, TestFailure[Throwable], TestSuccess] = suite("FindSubscriptionSpec")(
+  def spec: Spec[TestEnvironment, Any] = suite("FindSubscriptionSpec")(
     findOptionalFirst(),
     insertDocuments(),
     findFirst(),
@@ -52,7 +51,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield size
 
     test("insert documents") {
-      assertM(documentsSize)(equalTo(6.toLong))
+      assertZIO(documentsSize)(equalTo(6.toLong))
     }
   }
 
@@ -63,7 +62,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find first returns nothing if there is No documents") {
-      assertM(document)(equalTo(None))
+      assertZIO(document)(equalTo(None))
     }
   }
 
@@ -74,7 +73,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find first return a single document ") {
-      assertM(document)(equalTo(Document("_id" -> 1, "content" -> "textual content1")))
+      assertZIO(document)(equalTo(Document("_id" -> 1, "content" -> "textual content1")))
     }
   }
 
@@ -85,7 +84,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find and filter documents return a single document") {
-      assertM(allDocuments.map(_.toSeq))(
+      assertZIO(allDocuments.map(_.toSeq))(
         equalTo(Seq(Document("_id" -> 5, "content" -> "textual content1")))
       )
     }
@@ -98,7 +97,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find the first two documents") {
-      assertM(allDocuments.map(_.toSeq))(
+      assertZIO(allDocuments.map(_.toSeq))(
         equalTo(
           Seq(
             Document("_id" -> 1, "content" -> "textual content1"),
@@ -116,7 +115,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find and skip two documents") {
-      assertM(allDocuments.map(_.size))(equalTo(4))
+      assertZIO(allDocuments.map(_.size))(equalTo(4))
     }
   }
 
@@ -127,7 +126,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find and project documents by id") {
-      assertM(allDocuments.map(_.toSeq))(equalTo(Seq(Document("_id" -> 1), Document("_id" -> 2))))
+      assertZIO(allDocuments.map(_.toSeq))(equalTo(Seq(Document("_id" -> 1), Document("_id" -> 2))))
     }
   }
 
@@ -138,7 +137,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
     } yield docs
 
     test("Find sorted documents") {
-      assertM(allDocuments.map(_.toSeq))(
+      assertZIO(allDocuments.map(_.toSeq))(
         equalTo(
           Seq(
             Document("_id" -> 6, "content" -> "textual content3"),
@@ -157,7 +156,7 @@ object FindSubscriptionSpec extends DefaultRunnableSpec {
         _ <- mongoClient.pureClose()
 
       } yield ()
-      assertM(close)(equalTo(()))
+      assertZIO(close)(equalTo(()))
     }
   }
 
