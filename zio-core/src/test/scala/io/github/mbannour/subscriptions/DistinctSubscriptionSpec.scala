@@ -6,12 +6,12 @@ import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.model.Filters
-import zio.{Duration, ExecutionStrategy}
+import zio._
 import zio.test.Assertion.equalTo
-import zio.test.environment.TestEnvironment
-import zio.test.{DefaultRunnableSpec, TestAspect, ZSpec, assertM}
+import zio.test._
+import zio.test.ZIOSpecDefault
 
-object DistinctSubscriptionSpec extends DefaultRunnableSpec {
+object DistinctSubscriptionSpec extends ZIOSpecDefault {
 
   val mongoClient = mongoTestClient()
 
@@ -21,10 +21,10 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
 
   val collection = database.flatMap(_.getCollection[Person]("test"))
 
-  override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
-    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.fromMillis(30000)))
+  override def aspects =
+    Chunk(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.fromMillis(30000)))
 
-  override def spec: ZSpec[TestEnvironment, Any] = suite("DistinctSubscriptionSpec")(
+  override def spec: Spec[TestEnvironment, Any] = suite("DistinctSubscriptionSpec")(
     distinctDocuments(),
     distinctFirstDocuments(),
     filterDistinctDocuments(),
@@ -46,7 +46,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
     } yield doc
 
     test("Get distinct Persons by name") {
-      assertM(names)(equalTo(Seq("John", "Carmen", "Yasmin")))
+      assertZIO(names)(equalTo(Seq("John", "Carmen", "Yasmin")))
     }
   }
 
@@ -57,7 +57,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
     } yield doc
 
     test("Get first person Persons by name") {
-      assertM(names)(equalTo("John"))
+      assertZIO(names)(equalTo("John"))
     }
   }
 
@@ -68,7 +68,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
     } yield doc
 
     test("Get filtered persons with age greater than 30") {
-      assertM(names)(equalTo(Seq("Carmen")))
+      assertZIO(names)(equalTo(Seq("Carmen")))
     }
   }
 
@@ -80,7 +80,7 @@ object DistinctSubscriptionSpec extends DefaultRunnableSpec {
         _ <- mongoClient.pureClose()
 
       } yield ()
-      assertM(close)(equalTo(()))
+      assertZIO(close)(equalTo(()))
     }
   }
 

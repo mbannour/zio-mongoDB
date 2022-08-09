@@ -3,7 +3,7 @@ package io.github.mbannour.result
 import scala.jdk.CollectionConverters._
 import com.mongodb.client.result.{InsertManyResult => JInsertManyResult}
 import org.bson.BsonValue
-import zio.{IO, Task}
+import zio._
 
 
 /**
@@ -29,5 +29,5 @@ case class InsertManyResult(private val wrapper: JInsertManyResult) {
     *
     * @return A Task of type map of the index of the inserted document to the id of the inserted document.
     */
-  def getInsertedIds: Task[Map[Integer, BsonValue]] = IO.attempt(wrapper.getInsertedIds.asScala.toMap)
+  def getInsertedIds: Task[Map[Integer, BsonValue]] = ZIO.attempt(wrapper.getInsertedIds.asScala.toMap)
 }

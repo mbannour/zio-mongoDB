@@ -1,7 +1,7 @@
 package io.mbannour
 
 import io.github.mbannour.MongoZioClient
-import zio.{ExitCode, Task, URIO, ZIO}
+import zio._
 import org.mongodb.scala.bson.codecs.Macros._
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
@@ -9,8 +9,7 @@ import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.set
 
-
-object CaseClassExample extends zio.App {
+object CaseClassExample extends zio.ZIOAppDefault {
 
   case class Person(_id: ObjectId, name: String, lastName: String, age: Int)
 
@@ -28,9 +27,11 @@ object CaseClassExample extends zio.App {
   )
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
+  val clientResource = MongoZioClient.autoCloseableClient("mongodb://localhost:27017")
 
-  val app = MongoZioClient.autoCloseableClient("mongodb://localhost:27017").use { client =>
-  for {
+  val app = ZIO.scoped {
+    for {
+      client <- clientResource
       database <- client.getDatabase("mydb").map(_.withCodecRegistry(codecRegistry))
       col <- database.getCollection[Person]("test")
       _ <- col.insertMany(persons)
@@ -40,13 +41,11 @@ object CaseClassExample extends zio.App {
       _ <- col.deleteOne(equal("name", "Zaphod"))
       count <- col.countDocuments()
       person <- col.find(equal("name", "Jean")).first().headOption
-      _  <- Task(println(s"Persons count: $count"))
-      _  <- Task(println( s"The updated person with name Jean is: $person"))
+      _  <- ZIO.attempt(println(s"Persons count: $count"))
+      _  <- ZIO.attempt(println( s"The updated person with name Jean is: $person"))
     } yield ()
-
   }
 
-  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] = app.exitCode
-
+  override def run: URIO[Any, ExitCode] = app.exitCode
 
 }

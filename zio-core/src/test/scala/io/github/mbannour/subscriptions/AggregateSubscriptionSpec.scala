@@ -9,12 +9,11 @@ import org.mongodb.scala.bson.{BsonArray, BsonInt32, BsonInt64, BsonString, Obje
 import org.mongodb.scala.bson.codecs.Macros._
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.{Aggregates, Filters, Projections}
-import zio.{Duration, ExecutionStrategy, ZIO}
-import zio.test.Assertion.equalTo
-import zio.test.environment.TestEnvironment
-import zio.test.{DefaultRunnableSpec, TestAspect, ZSpec, assertM}
+import zio._
+import zio.test.Assertion._
+import zio.test._
 
-object AggregateSubscriptionSpec extends DefaultRunnableSpec {
+object AggregateSubscriptionSpec extends ZIOSpecDefault {
 
   val companies = List(
     Company(
@@ -107,10 +106,10 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
 
   val collection = database.flatMap(_.getCollection[Company]("test"))
 
-  override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
-    List(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.Infinity))
+  override def aspects =
+    Chunk(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.Infinity))
 
-  override def spec: ZSpec[TestEnvironment, Any] = suite("AggregateSubscriptionSpec")(
+  override def spec: Spec[TestEnvironment, Any] = suite("AggregateSubscriptionSpec")(
     initialCount(),
     insertCompanies(),
     aggregateSortedCompanies(),
@@ -119,18 +118,18 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
     closeConnection()
   )
 
-  def initialCount(): ZSpec[Any, Throwable] = {
+  def initialCount(): Spec[Any, Throwable] = {
     val count = for {
       col   <- collection
       count <- col.countDocuments()
     } yield count
 
     test("Count Documents") {
-      assertM(count)(equalTo(0L))
+      assertZIO(count)(equalTo(0L))
     }
   }
 
-  def insertCompanies(): ZSpec[Any, Throwable] = {
+  def insertCompanies(): Spec[Any, Throwable] = {
     val count = for {
       col   <- collection
       _     <- col.insertMany(companies)
@@ -138,11 +137,11 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
     } yield count
 
     test("Insert Documents") {
-      assertM(count)(equalTo(10L))
+      assertZIO(count)(equalTo(10L))
     }
   }
 
-  def aggregateSortedCompanies(): ZSpec[Any, Throwable] = {
+  def aggregateSortedCompanies(): Spec[Any, Throwable] = {
     val aggregatedResult: ZIO[Any, Throwable, Iterable[Document]] = for {
       col <- collection
       res <- col
@@ -163,7 +162,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
     } yield res
 
     test("Find sorted company names founded in 2004 and limited to two") {
-      assertM(aggregatedResult)(
+      assertZIO(aggregatedResult)(
         equalTo(
           Seq(
             Document("name" -> BsonString("AddThis")),
@@ -174,7 +173,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
     }
   }
 
-  def aggregateCompaniesByGroup(): ZSpec[Any, Throwable] = {
+  def aggregateCompaniesByGroup(): Spec[Any, Throwable] = {
     val aggregatedResult: ZIO[Any, Throwable, Iterable[Document]] = for {
       col <- collection
       res <- col
@@ -189,7 +188,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
         .fetch
     } yield res
     test("Find sorted company names founded in 2004 and limited to two") {
-      assertM(aggregatedResult)(
+      assertZIO(aggregatedResult)(
         equalTo(
           Seq(
             Document("_id" -> BsonInt32(2008), "companies" -> BsonArray(BsonString("Fiksu"))),
@@ -200,7 +199,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
     }
   }
 
-  def aggregateWithUnwind(): ZSpec[Any, Throwable] = {
+  def aggregateWithUnwind(): Spec[Any, Throwable] = {
     val aggregatedResult: ZIO[Any, Throwable, Iterable[Document]] = for {
       col <- collection
       result <- col
@@ -221,7 +220,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
     } yield result
 
     test("Find company names , funding rounds year and funding rounds amount limited to 3") {
-      assertM(aggregatedResult)(equalTo(Seq(
+      assertZIO(aggregatedResult)(equalTo(Seq(
         Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2004), "amount" -> BsonInt64(8500000))),
         Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2005), "amount" -> BsonInt64(2800000))),
         Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2006), "amount" -> BsonInt64(28700000)))
@@ -237,7 +236,7 @@ object AggregateSubscriptionSpec extends DefaultRunnableSpec {
         _   <- mongoClient.pureClose()
 
       } yield ()
-      assertM(close)(equalTo(()))
+      assertZIO(close)(equalTo(()))
     }
 
 }

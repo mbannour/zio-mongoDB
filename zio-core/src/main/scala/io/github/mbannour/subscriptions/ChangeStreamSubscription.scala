@@ -6,14 +6,14 @@ import com.mongodb.reactivestreams.client.ChangeStreamPublisher
 import io.github.mbannour.DefaultHelper.MapTo
 import org.bson.{BsonDocument, BsonTimestamp}
 import org.mongodb.scala.bson.collection.immutable.Document
-import zio.IO
+import zio._
 
 import java.util.concurrent.TimeUnit
 import scala.reflect.ClassTag
 
 case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subscription[ChangeStreamDocument[T]] {
 
-  override def fetch[_]: IO[Throwable, ChangeStreamDocument[T]] = IO.async[Throwable, ChangeStreamDocument[T]] {
+  override def fetch[_]: IO[Throwable, ChangeStreamDocument[T]] = ZIO.async[Any, Throwable, ChangeStreamDocument[T]] {
     callback =>
       p.subscribe {
         new JavaSubscriber[ChangeStreamDocument[T]] {
@@ -22,9 +22,9 @@ case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subs
 
           override def onSubscribe(s: JavaSubscription): Unit = s.request(Long.MaxValue)
 
-          override def onError(t: Throwable): Unit = callback(IO.fail(t))
+          override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
 
-          override def onComplete(): Unit = callback(IO.succeed(docStream))
+          override def onComplete(): Unit = callback(ZIO.succeed(docStream))
 
           override def onNext(t: ChangeStreamDocument[T]): Unit = docStream = t
         }
