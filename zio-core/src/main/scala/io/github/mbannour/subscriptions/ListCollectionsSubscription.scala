@@ -6,17 +6,29 @@ import org.reactivestreams.{Subscription => JSubscription}
 import zio._
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ArrayBuffer
 
 case class ListCollectionsSubscription[T](p: ListCollectionsPublisher[T]) extends Subscription[Iterable[T]] {
 
-  override def fetch[_]: IO[Throwable, Iterable[T]] = ZIO.async[Any, Throwable, Iterable[T]] { callback =>
+  override def fetch[F[_]]: IO[Throwable, Iterable[T]] = ZIO.async[Any, Throwable, Iterable[T]] { callback =>
     p.subscribe {
       new JavaSubscriber[T] {
 
         val items = new ArrayBuffer[T]()
 
-        override def onSubscribe(s: JSubscription): Unit = s.request(Long.MaxValue)
+        val isSubscribedOrInterrupted = new AtomicBoolean
+
+        override def onSubscribe(s: JSubscription): Unit =  if (s == null) {
+          val e = new NullPointerException("s was null in onSubscribe")
+          throw e
+        } else {
+          val shouldCancel = isSubscribedOrInterrupted.getAndSet(true)
+          if (shouldCancel)
+            s.cancel()
+          else
+            s.request(Long.MaxValue)
+        }
 
         override def onNext(t: T): Unit = items += t
 

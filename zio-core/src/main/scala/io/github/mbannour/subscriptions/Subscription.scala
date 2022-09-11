@@ -4,6 +4,6 @@ import zio.IO
 
 trait Subscription[T] {
 
-  def fetch[_]: IO[Throwable, T]
+  def fetch[F[_]]: IO[Throwable, T]
 
 }

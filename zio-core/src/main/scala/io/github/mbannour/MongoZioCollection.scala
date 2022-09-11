@@ -242,28 +242,28 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def insertOne(document: T): IO[Throwable, InsertOneResult] =
-    SingleItemSubscription(wrapped.insertOne(document)).fetch.map(InsertOneResult)
+    SingleItemSubscription(wrapped.insertOne(document)).fetch.map(InsertOneResult(_))
 
   /**
     * Inserts the provided document. If the document is missing an identifier, the driver should generate one.
     *
     */
   def insertOne(document: T, options: InsertOneOptions): IO[Throwable, InsertOneResult] =
-    SingleItemSubscription(wrapped.insertOne(document, options)).fetch.map(InsertOneResult)
+    SingleItemSubscription(wrapped.insertOne(document, options)).fetch.map(InsertOneResult(_))
 
   /**
     * Inserts the provided document. If the document is missing an identifier, the driver should generate one.
     *
     */
   def insertOne(clientSession: ClientSession, document: T): IO[Throwable, InsertOneResult] =
-    SingleItemSubscription(wrapped.insertOne(clientSession, document)).fetch.map(InsertOneResult)
+    SingleItemSubscription(wrapped.insertOne(clientSession, document)).fetch.map(InsertOneResult(_))
 
   /**
     * Inserts the provided document. If the document is missing an identifier, the driver should generate one.
     *
     */
   def insertOne(clientSession: ClientSession, document: T, options: InsertOneOptions): IO[Throwable, InsertOneResult] =
-    SingleItemSubscription(wrapped.insertOne(clientSession, document, options)).fetch.map(InsertOneResult)
+    SingleItemSubscription(wrapped.insertOne(clientSession, document, options)).fetch.map(InsertOneResult(_))
 
   /**
     * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when
@@ -271,7 +271,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     * error handling.
     */
   def insertMany(documents: Seq[_ <: T]): IO[Throwable, InsertManyResult] =
-    SingleItemSubscription(wrapped.insertMany(documents.asJava)).fetch.map(InsertManyResult)
+    SingleItemSubscription(wrapped.insertMany(documents.asJava)).fetch.map(InsertManyResult(_))
 
   /**
     * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API. However, when
@@ -280,14 +280,14 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def insertMany(documents: Seq[_ <: T], options: InsertManyOptions): IO[Throwable, InsertManyResult] =
-    SingleItemSubscription(wrapped.insertMany(documents.asJava, options)).fetch.map(InsertManyResult)
+    SingleItemSubscription(wrapped.insertMany(documents.asJava, options)).fetch.map(InsertManyResult(_))
 
   /**
     * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API.
     *
     */
   def insertMany(clientSession: ClientSession, documents: Seq[_ <: T]): IO[Throwable, InsertManyResult] =
-    SingleItemSubscription(wrapped.insertMany(clientSession, documents.asJava)).fetch.map(InsertManyResult)
+    SingleItemSubscription(wrapped.insertMany(clientSession, documents.asJava)).fetch.map(InsertManyResult(_))
 
   /**
     * Inserts a batch of documents. The preferred way to perform bulk inserts is to use the BulkWrite API.
@@ -298,7 +298,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
                   documents: Seq[_ <: T],
                   options: InsertManyOptions
                 ): IO[Throwable, InsertManyResult] =
-    SingleItemSubscription(wrapped.insertMany(clientSession, documents.asJava, options)).fetch.map(InsertManyResult)
+    SingleItemSubscription(wrapped.insertMany(clientSession, documents.asJava, options)).fetch.map(InsertManyResult(_))
 
   /**
     * Removes at most one document from the collection that matches the given filter. If no documents match, the
@@ -306,7 +306,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteOne(filter: Bson): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteOne(filter)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteOne(filter)).fetch.map(DeleteResult(_))
 
   /**
     * Removes at most one document from the collection that matches the given filter. If no documents match, the
@@ -314,7 +314,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteOne(filter: Bson, options: DeleteOptions): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteOne(filter, options)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteOne(filter, options)).fetch.map(DeleteResult(_))
 
   /**
     * Removes at most one document from the collection that matches the given filter. If no documents match, the
@@ -322,7 +322,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteOne(clientSession: ClientSession, filter: Bson): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteOne(clientSession, filter)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteOne(clientSession, filter)).fetch.map(DeleteResult(_))
 
   /**
     * Removes at most one document from the collection that matches the given filter. If no documents match, the
@@ -330,14 +330,14 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteOne(clientSession: ClientSession, filter: Bson, options: DeleteOptions): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteOne(clientSession, filter, options)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteOne(clientSession, filter, options)).fetch.map(DeleteResult(_))
 
   /**
     * Removes all documents from the collection that match the given query filter. If no documents match, the collection
     * is not modified.
     */
   def deleteMany(filter: Bson): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteMany(filter)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteMany(filter)).fetch.map(DeleteResult(_))
 
   /**
     * Removes all documents from the collection that match the given query filter. If no documents match, the collection
@@ -345,7 +345,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteMany(filter: Bson, options: DeleteOptions): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteMany(filter, options)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteMany(filter, options)).fetch.map(DeleteResult(_))
 
   /**
     * Removes all documents from the collection that match the given query filter. If no documents match, the collection
@@ -353,7 +353,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteMany(clientSession: ClientSession, filter: Bson): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteMany(clientSession, filter)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteMany(clientSession, filter)).fetch.map(DeleteResult(_))
 
   /**
     * Removes all documents from the collection that match the given query filter. If no documents match, the collection
@@ -361,7 +361,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def deleteMany(clientSession: ClientSession, filter: Bson, options: DeleteOptions): IO[Throwable, DeleteResult] =
-    SingleItemSubscription(wrapped.deleteMany(clientSession, filter, options)).fetch.map(DeleteResult)
+    SingleItemSubscription(wrapped.deleteMany(clientSession, filter, options)).fetch.map(DeleteResult(_))
 
   /**
     * Replace a document in the collection according to the specified arguments.
@@ -375,7 +375,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def replaceOne(clientSession: ClientSession, filter: Bson, replacement: T): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.replaceOne(clientSession, filter, replacement)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.replaceOne(clientSession, filter, replacement)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -383,7 +383,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def replaceOne(filter: Bson, replacement: T, options: ReplaceOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.replaceOne(filter, replacement, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.replaceOne(filter, replacement, options)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -391,7 +391,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def replaceOne(clientSession: ClientSession, filter: Bson, replacement: T, options: ReplaceOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.replaceOne(clientSession, filter, replacement, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.replaceOne(clientSession, filter, replacement, options)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -399,7 +399,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(filter: Bson, update: Bson): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(filter, update)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(filter, update)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -407,7 +407,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(filter: Bson, update: Bson, options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(filter, update, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(filter, update, options)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -415,7 +415,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(clientSession: ClientSession, filter: Bson, update: Bson): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -423,7 +423,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(clientSession: ClientSession, filter: Bson, update: Bson, options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update, options)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -431,7 +431,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(filter: Bson, update: Seq[Bson]): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(filter, update.asJava)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(filter, update.asJava)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -439,7 +439,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(filter: Bson, update: Seq[Bson], options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(filter, update.asJava, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(filter, update.asJava, options)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -447,7 +447,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(clientSession: ClientSession, filter: Bson, update: Seq[Bson]): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update.asJava)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update.asJava)).fetch.map(UpdateResult(_))
 
 
   /**
@@ -455,56 +455,56 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
     *
     */
   def updateOne(clientSession: ClientSession, filter: Bson, update: Seq[Bson], options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update.asJava, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateOne(clientSession, filter, update.asJava, options)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(filter: Bson, update: Bson): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(filter, update)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(filter, update)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(filter: Bson, update: Bson, options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(filter, update, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(filter, update, options)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(clientSession: ClientSession, filter: Bson, update: Bson): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(clientSession: ClientSession, filter: Bson, update: Bson, options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update, options)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(filter: Bson, update: Seq[Bson]): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(filter, update.asJava)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(filter, update.asJava)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(filter: Bson, update: Seq[Bson], options: UpdateOptions): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(filter, update.asJava, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(filter, update.asJava, options)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
     *
     */
   def updateMany(clientSession: ClientSession, filter: Bson, update: Seq[Bson]): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update.asJava)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update.asJava)).fetch.map(UpdateResult(_))
 
   /**
     * Update a single document in the collection according to the specified arguments.
@@ -516,7 +516,7 @@ case class MongoZioCollection[T](private val wrapped: JavaMongoCollection[T]) {
                   update: Seq[Bson],
                   options: UpdateOptions
                 ): IO[Throwable, UpdateResult] =
-    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update.asJava, options)).fetch.map(UpdateResult)
+    SingleItemSubscription(wrapped.updateMany(clientSession, filter, update.asJava, options)).fetch.map(UpdateResult(_))
 
   /**
     * Atomically find a document and remove it.

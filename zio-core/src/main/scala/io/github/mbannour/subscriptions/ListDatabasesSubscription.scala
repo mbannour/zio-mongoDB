@@ -10,7 +10,7 @@ import scala.collection.mutable.ArrayBuffer
 
 case class ListDatabasesSubscription[T](p: ListDatabasesPublisher[T]) extends Subscription[Iterable[T]] {
 
-  override def fetch[_]: IO[Throwable, Iterable[T]] =
+  override def fetch[F[_]]: IO[Throwable, Iterable[T]] =
     ZIO.async[Any, Throwable, Iterable[T]] { callback =>
       p.subscribe {
         new JavaSubscriber[T] {

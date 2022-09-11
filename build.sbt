@@ -1,12 +1,12 @@
 import Dependencies._
 import sbt.{Test, ThisBuild}
 
-lazy val scala212 = "2.12.14"
+lazy val scala212 = "2.12.16"
 lazy val scala213 = "2.13.8"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 ThisBuild / scalaVersion     := "2.13.8"
-ThisBuild / version          := "0.0.3"
+ThisBuild / version          := "0.0.4-MC1"
 ThisBuild / organization     := "io.github.mbannour"
 ThisBuild / organizationName := "mbannour"
 ThisBuild / description      := "ZIO wrapper for MongoDB Reactive Streams Java Driver"
@@ -47,14 +47,15 @@ lazy val zioCore = (project in file("zio-core"))
       else Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
     ThisBuild / publishMavenStyle := true,
+    Test / publishArtifact := false,
     scalacOptions ++= scalaOptions,
     crossScalaVersions := supportedScalaVersions,
     credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
     libraryDependencies ++= Seq(
         mongoScala,
-        mongodbDriverStreams,
         logback,
         zio,
+        zioIntStream,
         zioStreams,
         zioMagnoliaTest % Test,
         zioTestSbt % Test,

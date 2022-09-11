@@ -14,7 +14,7 @@ import scala.jdk.CollectionConverters._
 import java.io.Closeable
 import scala.reflect.ClassTag
 
-case class MongoZioClient(private val wrapped: JavaMongoClient) extends Closeable {
+final class MongoZioClient private( val wrapped: JavaMongoClient) extends Closeable {
   /**
     * Creates a client session.
     */
@@ -137,7 +137,7 @@ object MongoZioClient {
       case Some(info) => MongoDriverInformation.builder(info)
       case None => MongoDriverInformation.builder()
     }
-    MongoZioClient(MongoClients.create(clientSettings, builder.build()))
+   new MongoZioClient(MongoClients.create(clientSettings, builder.build()))
   }
 
   val DEFAULT_CODEC_REGISTRY: CodecRegistry = fromRegistries(MongoClients.getDefaultCodecRegistry)
