@@ -47,7 +47,7 @@ lazy val zioCore = (project in file("zio-core"))
       else Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
     ThisBuild / publishMavenStyle := true,
-    Test / publishArtifact := false,
+    Test / packageBin / publishArtifact := false,
     scalacOptions ++= scalaOptions,
     crossScalaVersions := supportedScalaVersions,
     credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),

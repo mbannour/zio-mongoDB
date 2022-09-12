@@ -68,7 +68,7 @@ object CaseClassExample extends zio.ZIOAppDefault {
 }
 ```
 
-Zio-mongo allows you to query a stream of document with using ZMongoDB: 
+zio-mongo allows you to query a stream of document with using ZMongoSource: 
 
 Here an example of using  mongoDb with ZIO streams:
 
@@ -116,11 +116,11 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
     (for {
       col         <- zioCollection
       _           <- ZMongoSource.insertMany(col, persons)
-      firstPerson <- ZMongoSource(col.find().first(), bufferSize = 16)
+      firstPerson <- ZMongoSource(col.find().first(), bufferSize)
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"First saved person: $firstPerson")))
       _           <- ZMongoSource.default(col.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
       _           <- ZMongoSource.deleteOne(col, equal("name", "Zaphod"))
-      count       <- ZMongoSource(col.countDocuments(), bufferSize = 16)
+      count       <- ZMongoSource(col.countDocuments(), bufferSize)
       person      <- ZMongoSource.default(col.find(equal("name", "Jean")).first())
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"Persons count: $count")))
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"The updated person with name Jean is: $person")))
