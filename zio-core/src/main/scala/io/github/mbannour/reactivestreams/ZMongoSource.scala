@@ -1,6 +1,5 @@
 package io.github.mbannour.reactivestreams
 
-import com.mongodb.client.result.UpdateResult
 import io.github.mbannour.result.{ DeleteResult, InsertManyResult, UpdateResult }
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.conversions.Bson
@@ -12,8 +11,6 @@ import zio.interop.reactivestreams._
 import scala.jdk.CollectionConverters._
 
 object ZMongoSource {
-
-  def apply[T](query: Publisher[T]): ZStream[Any, Throwable, T] = query.toZIOStream()
 
   private val DefaultInsertManyOptions = new InsertManyOptions()
 
