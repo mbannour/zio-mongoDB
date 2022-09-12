@@ -71,7 +71,7 @@ object CaseClassExample extends zio.ZIOAppDefault {
 
 zio-mongo allows you to query a stream of document with using ZMongoSource: 
 
-Here an example of using  mongoDb with ZIO streams:
+Here an example of using  mongoDB with ZIO streams:
 
 ```scala
 import com.mongodb.reactivestreams.client.MongoClients
@@ -117,12 +117,12 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
     (for {
       col         <- zioCollection
       _           <- ZMongoSource.insertMany(col, persons)
-      firstPerson <- ZMongoSource(col.find().first(), bufferSize)
+      firstPerson <- ZMongoSource(col.find().first(), bufferSize = 16)
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"First saved person: $firstPerson")))
-      _           <- ZMongoSource.default(col.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
-      _           <- ZMongoSource.deleteOne(col, equal("name", "Zaphod"))
-      count       <- ZMongoSource(col.countDocuments(), bufferSize)
-      person      <- ZMongoSource.default(col.find(equal("name", "Jean")).first())
+      _           <- ZMongoSource(col.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
+      _           <- ZMongoSource(col.deleteOne(equal("name", "Zaphod")))
+      count       <- ZMongoSource(col.countDocuments(), bufferSize = 16)
+      person      <- ZMongoSource(col.find(equal("name", "Jean")).first())
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"Persons count: $count")))
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"The updated person with name Jean is: $person")))
     } yield ()).run(ZSink.head)
@@ -131,8 +131,8 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
   override def run: URIO[Any, ExitCode] = app.exitCode
 
 }
-```
 
+```
 
 [Scala version support]: https://index.scala-lang.org/mbannour/zio-mongodb/ziomongo
 [ziomongo]: https://index.scala-lang.org/mbannour/zio-mongodb/ziomongo/latest.svg
