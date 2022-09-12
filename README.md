@@ -1,5 +1,6 @@
 
 [![Snapshots][ziomongo]][Scala version support]
+[![Snapshots][ziomongo jvm]][Scala version support]
 
 # zio-mongo
 ZIO wrapper for MongoDB Reactive Streams Java Driver.
@@ -135,3 +136,4 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
 
 [Scala version support]: https://index.scala-lang.org/mbannour/zio-mongodb/ziomongo
 [ziomongo]: https://index.scala-lang.org/mbannour/zio-mongodb/ziomongo/latest.svg
+[ziomongo jvm]: https://index.scala-lang.org/mbannour/zio-mongodb/ziomongo/latest-by-scala-version.svg?platform=jvm
