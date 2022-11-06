@@ -4,6 +4,7 @@ import com.mongodb.reactivestreams.client.ListCollectionsPublisher
 import org.bson.conversions.Bson
 
 import java.util.concurrent.TimeUnit
+
 case class ListCollectionsSubscription[T](p: ListCollectionsPublisher[T]) extends Subscription[T, ListCollectionsPublisher[T]](p) {
 
   def filter(filter: Bson): ListCollectionsSubscription[T] = this.copy(p.filter(filter))

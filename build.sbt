@@ -2,11 +2,11 @@ import Dependencies._
 import sbt.{Test, ThisBuild}
 
 lazy val scala212 = "2.12.16"
-lazy val scala213 = "2.13.8"
+lazy val scala213 = "2.13.10"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 ThisBuild / scalaVersion     := "2.13.8"
-ThisBuild / version          := "0.0.4"
+ThisBuild / version          := "0.0.5"
 ThisBuild / organization     := "io.github.mbannour"
 ThisBuild / organizationName := "mbannour"
 ThisBuild / description      := "ZIO wrapper for MongoDB Reactive Streams Java Driver"
@@ -57,6 +57,7 @@ lazy val zioCore = (project in file("zio-core"))
         zio,
         zioIntStream,
         zioStreams,
+        slf4j,
         zioMagnoliaTest % Test,
         zioTestSbt % Test,
         zioTest % Test,
