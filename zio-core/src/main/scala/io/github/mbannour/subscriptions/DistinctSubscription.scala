@@ -3,32 +3,8 @@ package io.github.mbannour.subscriptions
 import com.mongodb.client.model.Collation
 import com.mongodb.reactivestreams.client.DistinctPublisher
 import org.bson.conversions.Bson
-import zio._
-
 import java.util.concurrent.TimeUnit
-import scala.collection.mutable.ArrayBuffer
-
-case class DistinctSubscription[T](p: DistinctPublisher[T]) extends Subscription[Iterable[T]] {
-
-  override def fetch[F[_]]: IO[Throwable, Iterable[T]] =
-    ZIO.async[Any, Throwable, Iterable[T]] { callback =>
-      p.subscribe {
-        new JavaSubscriber[T] {
-          val items = new ArrayBuffer[T]()
-
-          override def onSubscribe(s: JavaSubscription): Unit = s.request(Long.MaxValue)
-
-          override def onNext(t: T): Unit = items += t
-
-          override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
-
-          override def onComplete(): Unit = callback(ZIO.succeed(items.toList))
-        }
-      }
-    }
-
-
-  def headOption[F[_]]: IO[Throwable, Option[T]] = fetch.map(_.headOption)
+case class DistinctSubscription[T](p: DistinctPublisher[T]) extends Subscription[T, DistinctPublisher[T]](p) {
 
   def filter(filter: Bson): DistinctSubscription[T] = this.copy(p.filter(filter))
 

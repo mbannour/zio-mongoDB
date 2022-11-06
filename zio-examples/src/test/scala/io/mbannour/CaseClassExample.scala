@@ -3,7 +3,7 @@ package io.mbannour
 import io.github.mbannour.MongoZioClient
 import zio._
 import org.mongodb.scala.bson.codecs.Macros._
-import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.bson.codecs.configuration.CodecRegistries.{ fromProviders, fromRegistries }
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.model.Filters.equal
@@ -13,7 +13,7 @@ object CaseClassExample extends zio.ZIOAppDefault {
 
   case class Person(_id: ObjectId, name: String, lastName: String, age: Int)
 
-  val persons : Seq[Person] = Seq(
+  val persons: Seq[Person] = Seq(
     Person(new ObjectId(), "Charles", "Babbage", 34),
     Person(new ObjectId(), "George", "Boole", 19),
     Person(new ObjectId(), "Gertrude", "Blanch", 74),
@@ -27,22 +27,24 @@ object CaseClassExample extends zio.ZIOAppDefault {
   )
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
-  val clientResource = MongoZioClient.autoCloseableClient("mongodb://localhost:27017")
+  val collection = MongoZioClient.autoCloseableClient("mongodb://localhost:27017").map { client =>
+    val database = client.getDatabase("mydb").withCodecRegistry(codecRegistry)
+    database.getCollection[Person]("test")
+  }
+
 
   val app = ZIO.scoped {
     for {
-      client <- clientResource
-      database <- client.getDatabase("mydb").map(_.withCodecRegistry(codecRegistry))
-      col <- database.getCollection[Person]("test")
-      _ <- col.insertMany(persons)
-      _ <- col.find().first().fetch
-      _ <- col.find(equal("name", "Ida")).first().fetch
-      _ <- col.updateOne(equal("name", "Jean"), set("lastName", "Bannour"))
-      _ <- col.deleteOne(equal("name", "Zaphod"))
-      count <- col.countDocuments()
+      col    <- collection
+      _      <- col.insertMany(persons)
+      _      <- col.find().first().fetch
+      _      <- col.find(equal("name", "Ida")).first().fetch
+      _      <- col.updateOne(equal("name", "Jean"), set("lastName", "Bannour"))
+      _      <- col.deleteOne(equal("name", "Zaphod"))
+      count  <- col.countDocuments()
       person <- col.find(equal("name", "Jean")).first().headOption
-      _  <- ZIO.attempt(println(s"Persons count: $count"))
-      _  <- ZIO.attempt(println( s"The updated person with name Jean is: $person"))
+      _      <- ZIO.attempt(println(s"Persons count: $count"))
+      _      <- ZIO.attempt(println(s"The updated person with name Jean is: $person"))
     } yield ()
   }
 

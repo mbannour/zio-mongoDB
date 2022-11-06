@@ -11,7 +11,7 @@ import zio._
 import java.util.concurrent.TimeUnit
 import scala.reflect.ClassTag
 
-case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends Subscription[ChangeStreamDocument[T]] {
+case class ChangeStreamSubscription[T](p: ChangeStreamPublisher[T]) extends SingleSubscription[ChangeStreamDocument[T]] {
 
   override def fetch[F[_]]: IO[Throwable, ChangeStreamDocument[T]] = ZIO.async[Any, Throwable, ChangeStreamDocument[T]] {
     callback =>

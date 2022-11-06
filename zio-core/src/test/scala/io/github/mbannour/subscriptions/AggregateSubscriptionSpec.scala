@@ -1,7 +1,7 @@
 package io.github.mbannour.subscriptions
 
 import com.mongodb.client.model.Accumulators.push
-import io.github.mbannour.{Company, FundingRound}
+import io.github.mbannour.{Company, FundingRound, MongoZioCollection}
 import io.github.mbannour.MongoTestClient.mongoTestClient
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
@@ -98,13 +98,14 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
     )
   )
 
-  val mongoClient = mongoTestClient()
-
   val codecRegistry = fromRegistries(fromProviders(classOf[Company], classOf[FundingRound]), DEFAULT_CODEC_REGISTRY)
 
-  val database = mongoClient.getDatabase("mydb").map(_.withCodecRegistry(codecRegistry))
+  val mongoClient = mongoTestClient()
 
-  val collection = database.flatMap(_.getCollection[Company]("test"))
+  val collection: ZIO[Any, Throwable, MongoZioCollection[Company]] = mongoClient.map { mongoClient =>
+    val database = mongoClient.getDatabase("mydb").withCodecRegistry(codecRegistry)
+    database.getCollection[Company]("test")
+  }
 
   override def aspects =
     Chunk(TestAspect.executionStrategy(ExecutionStrategy.Sequential), TestAspect.timeout(Duration.Infinity))
@@ -142,7 +143,7 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
   }
 
   def aggregateSortedCompanies(): Spec[Any, Throwable] = {
-    val aggregatedResult: ZIO[Any, Throwable, Iterable[Document]] = for {
+    val aggregatedResult = for {
       col <- collection
       res <- col
         .aggregate(
@@ -159,7 +160,7 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
           )
         )
         .fetch
-    } yield res
+    } yield res.toSeq
 
     test("Find sorted company names founded in 2004 and limited to two") {
       assertZIO(aggregatedResult)(
@@ -174,7 +175,7 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
   }
 
   def aggregateCompaniesByGroup(): Spec[Any, Throwable] = {
-    val aggregatedResult: ZIO[Any, Throwable, Iterable[Document]] = for {
+    val aggregatedResult = for {
       col <- collection
       res <- col
         .aggregate(
@@ -186,7 +187,7 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
           )
         )
         .fetch
-    } yield res
+    } yield res.toSeq
     test("Find sorted company names founded in 2004 and limited to two") {
       assertZIO(aggregatedResult)(
         equalTo(
@@ -211,20 +212,33 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
             Aggregates.project(
               Projections.fields(
                 Projections.excludeId(),
-                Projections.include(Seq("name", "funding_rounds.year", "funding_rounds.amount"):_*)
+                Projections.include(Seq("name", "funding_rounds.year", "funding_rounds.amount"): _*)
               )
             )
           )
         )
         .fetch
-    } yield result
+    } yield result.toSeq
 
     test("Find company names , funding rounds year and funding rounds amount limited to 3") {
-      assertZIO(aggregatedResult)(equalTo(Seq(
-        Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2004), "amount" -> BsonInt64(8500000))),
-        Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2005), "amount" -> BsonInt64(2800000))),
-        Document("name" -> BsonString("Facebook"), "funding_rounds" -> Document("year" -> BsonInt32(2006), "amount" -> BsonInt64(28700000)))
-      )))
+      assertZIO(aggregatedResult)(
+        equalTo(
+          Seq(
+            Document(
+              "name"           -> BsonString("Facebook"),
+              "funding_rounds" -> Document("year" -> BsonInt32(2004), "amount" -> BsonInt64(8500000))
+            ),
+            Document(
+              "name"           -> BsonString("Facebook"),
+              "funding_rounds" -> Document("year" -> BsonInt32(2005), "amount" -> BsonInt64(2800000))
+            ),
+            Document(
+              "name"           -> BsonString("Facebook"),
+              "funding_rounds" -> Document("year" -> BsonInt32(2006), "amount" -> BsonInt64(28700000))
+            )
+          )
+        )
+      )
     }
   }
 
@@ -233,8 +247,7 @@ object AggregateSubscriptionSpec extends ZIOSpecDefault {
       val close = for {
         col <- collection
         _   <- col.drop()
-        _   <- mongoClient.pureClose()
-
+        _   <- mongoClient.map(_.pureClose())
       } yield ()
       assertZIO(close)(equalTo(()))
     }

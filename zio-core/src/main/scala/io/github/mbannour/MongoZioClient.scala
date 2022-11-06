@@ -1,9 +1,10 @@
 package io.github.mbannour
 
-import com.mongodb.{ClientSessionOptions, ConnectionString, MongoClientSettings, MongoDriverInformation}
-import com.mongodb.reactivestreams.client.{ClientSession, MongoClients}
+import com.mongodb.{ ClientSessionOptions, ConnectionString, MongoClientSettings, MongoDriverInformation }
+import com.mongodb.reactivestreams.client.{ ClientSession, MongoClients }
 import io.github.mbannour.DefaultHelper.MapTo
-import io.github.mbannour.subscriptions.{ChangeStreamSubscription, ListDatabasesSubscription, ListSubscription, SingleItemSubscription}
+import io.github.mbannour.subscriptions._
+
 import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
@@ -14,7 +15,8 @@ import scala.jdk.CollectionConverters._
 import java.io.Closeable
 import scala.reflect.ClassTag
 
-final class MongoZioClient private( val wrapped: JavaMongoClient) extends Closeable {
+final class MongoZioClient private (val wrapped: JavaMongoClient) extends Closeable {
+
   /**
     * Creates a client session.
     */
@@ -30,30 +32,29 @@ final class MongoZioClient private( val wrapped: JavaMongoClient) extends Closea
   /**
     * Gets the database with the given name.
     */
-  def getDatabase(name: String): Task[MongoZioDatabase] = ZIO.attempt(MongoZioDatabase(wrapped.getDatabase(name)))
+  def getDatabase(name: String): MongoZioDatabase = MongoZioDatabase(wrapped.getDatabase(name))
 
   /**
-    * Close the client, which will close all underlying cached resources, including, for example,
-    * sockets and background monitoring threads.
+    * Close the client, which will close all underlying cached resources, including, for example, sockets and background
+    * monitoring threads.
     */
   def close(): Unit = wrapped.close()
 
-
   /**
-    * Close the client , which will close all underlying cached resources, including, for example,
-    * sockets and background monitoring threads.
+    * Close the client , which will close all underlying cached resources, including, for example, sockets and
+    * background monitoring threads.
     */
   def pureClose(): Task[Unit] = ZIO.attempt(close())
 
   /**
     * Get a list of the database names
     */
-  def listDatabaseNames(): IO[Throwable, Iterable[String]] = ListSubscription(wrapped.listDatabaseNames()).fetch
+  def listDatabaseNames(): IO[Throwable, Iterator[String]] = ListSubscription(wrapped.listDatabaseNames()).fetch
 
   /**
     * Get a list of the database names
     */
-  def listDatabaseNames(clientSession: ClientSession): IO[Throwable, Iterable[String]] =
+  def listDatabaseNames(clientSession: ClientSession): IO[Throwable, Iterator[String]] =
     ListSubscription(wrapped.listDatabaseNames(clientSession)).fetch
 
   /**
@@ -65,7 +66,9 @@ final class MongoZioClient private( val wrapped: JavaMongoClient) extends Closea
   /**
     * Gets the list of databases
     */
-  def listDatabases[T](clientSession: ClientSession)(implicit e: T MapTo Document, ct: ClassTag[T]): ListDatabasesSubscription[T] =
+  def listDatabases[T](
+      clientSession: ClientSession
+  )(implicit e: T MapTo Document, ct: ClassTag[T]): ListDatabasesSubscription[T] =
     ListDatabasesSubscription(wrapped.listDatabases(clientSession, clazz(ct)))
 
   /**
@@ -83,13 +86,18 @@ final class MongoZioClient private( val wrapped: JavaMongoClient) extends Closea
   /**
     * Creates a change stream for this collection.
     */
-  def watch[T](clientSession: ClientSession)(implicit e: T MapTo Document, ct: ClassTag[T]): ChangeStreamSubscription[T] =
+  def watch[T](
+      clientSession: ClientSession
+  )(implicit e: T MapTo Document, ct: ClassTag[T]): ChangeStreamSubscription[T] =
     ChangeStreamSubscription(wrapped.watch(clientSession, clazz(ct)))
 
   /**
     * Creates a change stream for this collection.
     */
-  def watch[T](clientSession: ClientSession, pipeline: Seq[Bson])(implicit e: T MapTo Document, ct: ClassTag[T]): ChangeStreamSubscription[T] =
+  def watch[T](clientSession: ClientSession, pipeline: Seq[Bson])(implicit
+      e: T MapTo Document,
+      ct: ClassTag[T]
+  ): ChangeStreamSubscription[T] =
     ChangeStreamSubscription(wrapped.watch(clientSession, pipeline.asJava, clazz(ct)))
 
 }
@@ -106,7 +114,6 @@ object MongoZioClient {
     */
   def apply(uri: String): Task[MongoZioClient] = MongoZioClient(uri, None)
 
-
   /**
     * Create an auto closable MongoZioClient instance from a connection string uri
     */
@@ -115,10 +122,15 @@ object MongoZioClient {
   /**
     * Create a MongoZioClient instance from a connection string uri
     */
-  def apply(uri: String, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] = {
-    apply(MongoClientSettings.builder().applyConnectionString(new ConnectionString(uri))
-      .codecRegistry(DEFAULT_CODEC_REGISTRY).build(), mongoDriverInformation)
-  }
+  def apply(uri: String, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] =
+    apply(
+      MongoClientSettings
+        .builder()
+        .applyConnectionString(new ConnectionString(uri))
+        .codecRegistry(DEFAULT_CODEC_REGISTRY)
+        .build(),
+      mongoDriverInformation
+    )
 
   /**
     * Create a MongoZioClient instance from the MongoClientSettings
@@ -128,18 +140,22 @@ object MongoZioClient {
   /**
     * Create a MongoZioClient instance from the MongoClientSettings
     */
-  def apply(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]): Task[MongoZioClient] =
+  def apply(
+      clientSettings: MongoClientSettings,
+      mongoDriverInformation: Option[MongoDriverInformation]
+  ): Task[MongoZioClient] =
     ZIO.attempt(createMongoClient(clientSettings, mongoDriverInformation))
 
-
-  private[mbannour] def createMongoClient(clientSettings:MongoClientSettings, mongoDriverInformation: Option[MongoDriverInformation]) = {
+  private[mbannour] def createMongoClient(
+      clientSettings: MongoClientSettings,
+      mongoDriverInformation: Option[MongoDriverInformation]
+  ) = {
     val builder = mongoDriverInformation match {
       case Some(info) => MongoDriverInformation.builder(info)
-      case None => MongoDriverInformation.builder()
+      case None       => MongoDriverInformation.builder()
     }
-   new MongoZioClient(MongoClients.create(clientSettings, builder.build()))
+    new MongoZioClient(MongoClients.create(clientSettings, builder.build()))
   }
 
   val DEFAULT_CODEC_REGISTRY: CodecRegistry = fromRegistries(MongoClients.getDefaultCodecRegistry)
 }
-

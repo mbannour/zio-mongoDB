@@ -15,13 +15,38 @@ libraryDependencies += "io.github.mbannour" %% "ziomongo" % "0.0.3"
 
 ### Documentation
 
+#### Query the Collection
+
+To return all the documents in the collection, you can use `find().fetch` without any parameters.
+The query will return an Iterator of documents which allows to not load all the documents im memory
+
+The following example for getting all the documents.
+```scala
+
+val collection: Task[MongoZioCollection[Company]] = ???
+
+val result : Task[Iterator[Document]] = collection.flatMap(_.find().fetch)
+```
+
+To return only the first document in the collection, you either use `find().first().fetch` or `find().head`.
+The first returned document can be null, for that you can either use `find().first().headOption` or `find().headOption`
+
+The following example for getting the first document.
+```scala
+val firstDocument : Task[Document] =  collection.flatMap(_.find().first().fetch)
+val head : Task[Document] =  collection.flatMap(_.find().head)
+
+val maybeFirstDocument : Task[Option[Document]] = collection.flatMap(_.find().first().headOption)
+val maybeHead :Task[Option[Document]] = collection.flatMap(_.find().headOption)
+```
+
 Example of using mongoDB with ZIO
 
 ```scala
 import io.github.mbannour.MongoZioClient
 import zio._
 import org.mongodb.scala.bson.codecs.Macros._
-import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.bson.codecs.configuration.CodecRegistries.{ fromProviders, fromRegistries }
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.model.Filters.equal
@@ -31,7 +56,7 @@ object CaseClassExample extends zio.ZIOAppDefault {
 
   case class Person(_id: ObjectId, name: String, lastName: String, age: Int)
 
-  val persons : Seq[Person] = Seq(
+  val persons: Seq[Person] = Seq(
     Person(new ObjectId(), "Charles", "Babbage", 34),
     Person(new ObjectId(), "George", "Boole", 19),
     Person(new ObjectId(), "Gertrude", "Blanch", 74),
@@ -45,28 +70,30 @@ object CaseClassExample extends zio.ZIOAppDefault {
   )
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
-  val clientResource = MongoZioClient.autoCloseableClient("mongodb://localhost:27017")
+  val collection = MongoZioClient.autoCloseableClient("mongodb://localhost:27017").map { client =>
+    val database = client.getDatabase("mydb").withCodecRegistry(codecRegistry)
+    database.getCollection[Person]("test")
+  }
 
   val app = ZIO.scoped {
     for {
-      client <- clientResource
-      database <- client.getDatabase("mydb").map(_.withCodecRegistry(codecRegistry))
-      col <- database.getCollection[Person]("test")
-      _ <- col.insertMany(persons)
-      _ <- col.find().first().fetch
-      _ <- col.find(equal("name", "Ida")).first().fetch
-      _ <- col.updateOne(equal("name", "Jean"), set("lastName", "Bannour"))
-      _ <- col.deleteOne(equal("name", "Zaphod"))
-      count <- col.countDocuments()
+      col    <- collection
+      _      <- col.insertMany(persons)
+      _      <- col.find().first().fetch
+      _      <- col.find(equal("name", "Ida")).first().fetch
+      _      <- col.updateOne(equal("name", "Jean"), set("lastName", "Bannour"))
+      _      <- col.deleteOne(equal("name", "Zaphod"))
+      count  <- col.countDocuments()
       person <- col.find(equal("name", "Jean")).first().headOption
-      _  <- ZIO.attempt(println(s"Persons count: $count"))
-      _  <- ZIO.attempt(println( s"The updated person with name Jean is: $person"))
+      _      <- ZIO.attempt(println(s"Persons count: $count"))
+      _      <- ZIO.attempt(println(s"The updated person with name Jean is: $person"))
     } yield ()
   }
 
   override def run: URIO[Any, ExitCode] = app.exitCode
 
 }
+
 ```
 
 zio-mongo allows you to query a stream of document with using ZMongoSource: 
@@ -104,25 +131,24 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
 
-  val db = ZIO.fromAutoCloseable(ZIO.attempt(MongoClients.create("mongodb://localhost:27017"))).map { client =>
-    client.getDatabase("mydb").withCodecRegistry(codecRegistry)
-  }
-
-  val zioCollection = ZStream.fromZIO(db.map(database => database.getCollection("test", classOf[Person])))
-
+  val zioCollection =
+    ZIO.fromAutoCloseable(ZIO.attempt(MongoClients.create("mongodb://localhost:27017"))).map { client =>
+      val db = client.getDatabase("mydb").withCodecRegistry(codecRegistry)
+      db.getCollection("test", classOf[Person])
+    }
   //The bufferSize used as internal buffer. If possible, set to a power of 2 value for best performance.
   val bufferSize = 16
 
   val app = ZIO.scoped {
     (for {
-      col         <- zioCollection
-      _           <- ZMongoSource.insertMany(col, persons)
-      firstPerson <- ZMongoSource(col.find().first(), bufferSize = 16)
+      collection  <- ZStream.fromZIO(zioCollection)
+      _           <- ZMongoSource.insertMany(collection, persons)
+      firstPerson <- ZMongoSource(collection.find().first(), bufferSize = 16)
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"First saved person: $firstPerson")))
-      _           <- ZMongoSource(col.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
-      _           <- ZMongoSource(col.deleteOne(equal("name", "Zaphod")))
-      count       <- ZMongoSource(col.countDocuments(), bufferSize = 16)
-      person      <- ZMongoSource(col.find(equal("name", "Jean")).first())
+      _           <- ZMongoSource(collection.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
+      _           <- ZMongoSource(collection.deleteOne(equal("name", "Zaphod")))
+      count       <- ZMongoSource(collection.countDocuments(), bufferSize = 16)
+      person      <- ZMongoSource(collection.find(equal("name", "Jean")).first())
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"Persons count: $count")))
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"The updated person with name Jean is: $person")))
     } yield ()).run(ZSink.head)
@@ -131,7 +157,6 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
   override def run: URIO[Any, ExitCode] = app.exitCode
 
 }
-
 ```
 
 [Scala version support]: https://index.scala-lang.org/mbannour/zio-mongodb/ziomongo

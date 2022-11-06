@@ -1,19 +1,18 @@
 package io.github.mbannour
 
-import com.mongodb.client.model.changestream.ChangeStreamDocument
 import com.mongodb.client.model.{CreateCollectionOptions, CreateViewOptions}
 import com.mongodb.{ReadConcern, ReadPreference, WriteConcern}
-import com.mongodb.reactivestreams.client.ClientSession
+import com.mongodb.reactivestreams.client.{ClientSession, ListCollectionsPublisher}
 import io.github.mbannour.DefaultHelper.MapTo
 import io.github.mbannour.result.Completed
-import io.github.mbannour.subscriptions.{AggregateSubscription, ChangeStreamSubscription, CompletedSubscription, ListCollectionsSubscription, SingleItemSubscription}
+import io.github.mbannour.subscriptions._
 import org.bson
 
 import scala.jdk.CollectionConverters._
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
 import org.mongodb.scala.bson.collection.immutable.Document
-import zio.{IO, Task, ZIO}
+import zio.IO
 
 import scala.reflect.ClassTag
 
@@ -77,11 +76,11 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     MongoZioDatabase(javaMongoDatabase.withReadConcern(readConcern))
 
   /**
-    * Gets a MongoZioCollection, with a specific default document class.
+    * Get a MongoZioCollection, with a specific default document class.
     *
     */
-  def getCollection[TResult](collectionName: String)(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): Task[MongoZioCollection[TResult]] =
-    ZIO.attempt(MongoZioCollection(javaMongoDatabase.getCollection(collectionName, clazz(ct))))
+  def getCollection[TResult](collectionName: String)(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): MongoZioCollection[TResult] =
+    MongoZioCollection(javaMongoDatabase.getCollection(collectionName, clazz(ct)))
 
   /**
     * Executes command in the context of the current database.
@@ -128,8 +127,8 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     * Finds all the collections in this database.
     *
     */
-  def listCollections[TResult]()(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): IO[Throwable, Iterable[TResult]] =
-    ListCollectionsSubscription(javaMongoDatabase.listCollections(clazz(ct))).fetch
+  def listCollections[TResult]()(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): ListCollectionsPublisher[TResult] =
+    javaMongoDatabase.listCollections(clazz(ct))
 
   /**
     * Gets the names of all the collections in this database.
@@ -141,8 +140,8 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
     * Finds all the collections in this database.
     *
     */
-  def listCollections[TResult](clientSession: ClientSession)(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): IO[Throwable, Iterable[TResult]] =
-    ListCollectionsSubscription(javaMongoDatabase.listCollections(clientSession, clazz(ct))).fetch
+  def listCollections[TResult](clientSession: ClientSession)(implicit e: TResult MapTo Document, ct: ClassTag[TResult]): ListCollectionsSubscription[TResult] =
+    ListCollectionsSubscription(javaMongoDatabase.listCollections(clientSession, clazz(ct)))
 
   /**
     * Create a new collection with the given name.
@@ -199,41 +198,41 @@ case class MongoZioDatabase(private val javaMongoDatabase: JavaMongoDatabase) {
   /**
     * Creates a change stream for this collection.
     */
-  def watch(): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-    ChangeStreamSubscription(javaMongoDatabase.watch()).fetch
+  def watch(): ChangeStreamSubscription[bson.Document] =
+    ChangeStreamSubscription(javaMongoDatabase.watch())
 
   /**
     * Creates a change stream for this collection.
     *
     */
-  def watch(pipeline: Seq[Bson]): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-    ChangeStreamSubscription(javaMongoDatabase.watch(pipeline.asJava)).fetch
+  def watch(pipeline: Seq[Bson]): ChangeStreamSubscription[bson.Document] =
+    ChangeStreamSubscription(javaMongoDatabase.watch(pipeline.asJava))
 
   /**
     * Creates a change stream for this collection.
     *
     */
-  def watch(clientSession: ClientSession): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-    ChangeStreamSubscription(javaMongoDatabase.watch(clientSession)).fetch
+  def watch(clientSession: ClientSession): ChangeStreamSubscription[bson.Document] =
+    ChangeStreamSubscription(javaMongoDatabase.watch(clientSession))
 
   /**
     * Creates a change stream for this collection.
     *
     */
-  def watch(clientSession: ClientSession, pipeline: Seq[Bson]): IO[Throwable, ChangeStreamDocument[bson.Document]] =
-    ChangeStreamSubscription(javaMongoDatabase.watch(clientSession, pipeline.asJava)).fetch
+  def watch(clientSession: ClientSession, pipeline: Seq[Bson]): ChangeStreamSubscription[bson.Document] =
+    ChangeStreamSubscription(javaMongoDatabase.watch(clientSession, pipeline.asJava))
 
   /**
     * Aggregates documents according to the specified aggregation pipeline.
     *
     */
-  def aggregate[C](pipeline: Seq[Bson])(ct: ClassTag[C]): IO[Throwable, Iterable[C]] =
-    AggregateSubscription(javaMongoDatabase.aggregate[C](pipeline.asJava,  ct.runtimeClass.asInstanceOf[Class[C]])).fetch
+  def aggregate[C](pipeline: Seq[Bson])(ct: ClassTag[C]): AggregateSubscription[C] =
+    AggregateSubscription(javaMongoDatabase.aggregate[C](pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]]))
 
   /**
     * Aggregates documents according to the specified aggregation pipeline.
     *
     */
-  def aggregate[C](clientSession: ClientSession, pipeline: Seq[Bson])(ct: ClassTag[C]): IO[Throwable, Iterable[C]] =
-    AggregateSubscription(javaMongoDatabase.aggregate(clientSession, pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]])).fetch
+  def aggregate[C](clientSession: ClientSession, pipeline: Seq[Bson])(ct: ClassTag[C]): AggregateSubscription[C] =
+    AggregateSubscription(javaMongoDatabase.aggregate(clientSession, pipeline.asJava, ct.runtimeClass.asInstanceOf[Class[C]]))
 }

@@ -30,25 +30,24 @@ object ZIOSourceStreamExample extends zio.ZIOAppDefault {
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
 
-  val db = ZIO.fromAutoCloseable(ZIO.attempt(MongoClients.create("mongodb://localhost:27017"))).map { client =>
-    client.getDatabase("mydb").withCodecRegistry(codecRegistry)
-  }
-
-  val zioCollection = ZStream.fromZIO(db.map(database => database.getCollection("test", classOf[Person])))
-
+  val zioCollection =
+    ZIO.fromAutoCloseable(ZIO.attempt(MongoClients.create("mongodb://localhost:27017"))).map { client =>
+      val db = client.getDatabase("mydb").withCodecRegistry(codecRegistry)
+      db.getCollection("test", classOf[Person])
+    }
   //The bufferSize used as internal buffer. If possible, set to a power of 2 value for best performance.
   val bufferSize = 16
 
   val app = ZIO.scoped {
     (for {
-      col         <- zioCollection
-      _           <- ZMongoSource.insertMany(col, persons)
-      firstPerson <- ZMongoSource(col.find().first(), bufferSize = 16)
+      collection  <- ZStream.fromZIO(zioCollection)
+      _           <- ZMongoSource.insertMany(collection, persons)
+      firstPerson <- ZMongoSource(collection.find().first(), bufferSize = 16)
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"First saved person: $firstPerson")))
-      _           <- ZMongoSource(col.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
-      _           <- ZMongoSource(col.deleteOne(equal("name", "Zaphod")))
-      count       <- ZMongoSource(col.countDocuments(), bufferSize = 16)
-      person      <- ZMongoSource(col.find(equal("name", "Jean")).first())
+      _           <- ZMongoSource(collection.updateOne(equal("name", "Jean"), set("lastName", "Bannour")))
+      _           <- ZMongoSource(collection.deleteOne(equal("name", "Zaphod")))
+      count       <- ZMongoSource(collection.countDocuments(), bufferSize = 16)
+      person      <- ZMongoSource(collection.find(equal("name", "Jean")).first())
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"Persons count: $count")))
       _           <- ZStream.fromZIO(ZIO.attempt(println(s"The updated person with name Jean is: $person")))
     } yield ()).run(ZSink.head)

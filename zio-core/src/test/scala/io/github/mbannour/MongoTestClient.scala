@@ -1,12 +1,12 @@
 package io.github.mbannour
 
 import com.mongodb.{ConnectionString, MongoClientSettings}
-import io.github.mbannour.MongoZioClient.createMongoClient
+import zio._
 
 object MongoTestClient {
 
-  lazy val urlConfig =
+  lazy val urlConfig: MongoClientSettings =
     MongoClientSettings.builder().applyConnectionString(new ConnectionString("mongodb://localhost:27017")).build()
 
-  def mongoTestClient() = createMongoClient(urlConfig, None)
+  def mongoTestClient(): Task[MongoZioClient] = MongoZioClient(urlConfig)
 }

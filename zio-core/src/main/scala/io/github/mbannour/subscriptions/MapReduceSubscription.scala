@@ -3,31 +3,11 @@ package io.github.mbannour.subscriptions
 import com.mongodb.client.model.{Collation, MapReduceAction}
 import com.mongodb.reactivestreams.client.MapReducePublisher
 import org.bson.conversions.Bson
-import zio._
 
 import java.lang
 import java.util.concurrent.TimeUnit
-import scala.collection.mutable.ArrayBuffer
 
-case class MapReduceSubscription[T](p: MapReducePublisher[T]) extends Subscription[Iterable[T]] {
-
-  override def fetch[F[_]]: IO[Throwable, Iterable[T]] =
-    ZIO.async[Any, Throwable, Iterable[T]] { callback =>
-      p.subscribe {
-        new JavaSubscriber[T] {
-
-          val items = new ArrayBuffer[T]()
-
-          override def onSubscribe(s: JavaSubscription): Unit = s.request(Long.MaxValue)
-
-          override def onNext(t: T): Unit = items += t
-
-          override def onError(t: Throwable): Unit = callback(ZIO.fail(t))
-
-          override def onComplete(): Unit = callback(ZIO.succeed(items.toSeq))
-        }
-      }
-    }
+case class MapReduceSubscription[T](p: MapReducePublisher[T]) extends Subscription[T,  MapReducePublisher[T]](p) {
 
   def collectionName(collectionName: String): MapReduceSubscription[T] = this.copy(p.collectionName(collectionName))
 

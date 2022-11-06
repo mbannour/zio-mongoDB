@@ -3,7 +3,7 @@ package io.github.mbannour.subscriptions
 import io.github.mbannour.result.Completed
 import zio._
 
-case class CompletedSubscription(p: JavaPublisher[Void]) extends Subscription[Completed] {
+case class CompletedSubscription(p: JavaPublisher[Void]) extends SingleSubscription[Completed] {
 
   override def fetch[F[_]]: IO[Throwable, Completed] = ZIO.async[Any, Throwable, Completed] { callback =>
     p.subscribe {
