@@ -1,11 +1,10 @@
 package io.github.mbannour.subscriptions
 
 import io.github.mbannour.MongoTestClient.mongoTestClient
-import io.github.mbannour.Person
 import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
-import org.mongodb.scala.model.{ Aggregates, Filters, Projections, Sorts }
+import org.mongodb.scala.model.{Filters, Projections, Sorts }
 import zio._
 import zio.test.Assertion.equalTo
 import zio.test._
