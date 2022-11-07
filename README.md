@@ -18,18 +18,18 @@ libraryDependencies += "io.github.mbannour" %% "ziomongo" % "0.0.4"
 #### Query the Collection
 
 To return all the documents in the collection, you can use `find().fetch` without any parameters.
-The query will return an Iterator of documents which allows to not load all the documents im memory
+The query will return an Iterator of documents which allows to not load all the documents im memory.
 
 The following example for getting all the documents.
 ```scala
 
-val collection: Task[MongoZioCollection[Company]] = ???
+val collection: Task[MongoZioCollection[Document]] = ???
 
 val result : Task[Iterator[Document]] = collection.flatMap(_.find().fetch)
 ```
 
-To return only the first document in the collection, you either use `find().first().fetch` or `find().head`.
-The first returned document can be null, for that you can either use `find().first().headOption` or `find().headOption`
+To return only the first document in the collection, you can either use `find().first().fetch` or `find().head`.
+The first returned document can be null, for that you have the choice to get optional result with using either `find().first().headOption` or `find().headOption`
 
 The following example for getting the first document.
 ```scala
@@ -70,7 +70,7 @@ object CaseClassExample extends zio.ZIOAppDefault {
   )
 
   val codecRegistry = fromRegistries(fromProviders(classOf[Person]), DEFAULT_CODEC_REGISTRY)
-  val collection = MongoZioClient.autoCloseableClient("mongodb://localhost:27017").map { client =>
+    val collection = MongoZioClient.autoCloseableClient("mongodb://localhost:27017").map { client =>
     val database = client.getDatabase("mydb").withCodecRegistry(codecRegistry)
     database.getCollection[Person]("test")
   }
