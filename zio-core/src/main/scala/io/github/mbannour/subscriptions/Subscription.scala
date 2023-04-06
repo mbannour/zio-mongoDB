@@ -4,6 +4,7 @@ import zio.{ IO, ZIO }
 
 import java.util.concurrent.ConcurrentLinkedQueue
 import scala.jdk.CollectionConverters._
+
 abstract class Subscription[T, Publisher <: JavaPublisher[T]](p: Publisher) {
   def fetch[F[_]]: IO[Throwable, Iterator[T]] =
     ZIO.async[Any, Throwable, Iterator[T]] { callback =>

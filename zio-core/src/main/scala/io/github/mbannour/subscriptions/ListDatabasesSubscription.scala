@@ -1,6 +1,6 @@
 package io.github.mbannour.subscriptions
 
-import com.mongodb.reactivestreams.client.{ListCollectionsPublisher, ListDatabasesPublisher}
+import com.mongodb.reactivestreams.client.ListDatabasesPublisher
 import org.bson.conversions.Bson
 
 import java.lang

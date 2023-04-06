@@ -4,6 +4,7 @@ import com.mongodb.client.model.Collation
 import com.mongodb.reactivestreams.client.DistinctPublisher
 import org.bson.conversions.Bson
 import java.util.concurrent.TimeUnit
+
 case class DistinctSubscription[T](p: DistinctPublisher[T]) extends Subscription[T, DistinctPublisher[T]](p) {
 
   def filter(filter: Bson): DistinctSubscription[T] = this.copy(p.filter(filter))
