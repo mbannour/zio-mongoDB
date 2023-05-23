@@ -12,7 +12,7 @@ object Dependencies {
   lazy val zio        = "dev.zio"           %% "zio"                % zioVersion
   lazy val zioStreams = "dev.zio"           %% "zio-streams"        % zioVersion
   lazy val logback    = "ch.qos.logback"     % "logback-classic"    % logbackVersion % "test"
-  lazy val slf4j       = "org.slf4j"         % "slf4j-simple"       % "1.7.32"
+  lazy val slf4j       = "org.slf4j"         % "slf4j-simple"       % "1.7.32" % "test"
 
   //Test
   lazy val scalaTest       = "org.scalatest" %% "scalatest"                   % scalaTestVersion
