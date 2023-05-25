@@ -13,7 +13,7 @@ libraryDependencies += "io.github.mbannour" %% "ziomongo" % "0.0.6"
 
 ```
 ### Link
-[Simple ZIO-HTTP-MONGODB](https://github.com/mbannour/ZIO-Http-MongoDB):a simple project using ZIO-mongoDB and ZIO-HTTP 
+[ZIO-HTTP-MongoDB](https://github.com/mbannour/ZIO-Http-MongoDB):a simple project using ZIO-mongoDB and ZIO-HTTP 
 
 ### Documentation
 
