@@ -26,7 +26,10 @@ abstract class Subscription[T, Publisher <: JavaPublisher[T]](p: Publisher) {
 
   def toList[F[_]]: IO[Throwable, List[T]]       = fetch.map(_.toList)
   def head[F[_]]: IO[Throwable, T]               = fetch.map(_.next())
-  def headOption[F[_]]: IO[Throwable, Option[T]] = fetch.map(r => Option(r.next()))
+
+  def headOption[F[_]]: IO[Throwable, Option[T]] = fetch.map(r => {
+    if (r.hasNext) Some(r.next()) else None
+  })
 
 }
 

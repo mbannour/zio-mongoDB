@@ -27,6 +27,7 @@ object FindSubscriptionSpec extends ZIOSpecDefault {
 
   def spec: Spec[TestEnvironment, Any] = suite("FindSubscriptionSpec")(
     findOptionalFirst(),
+    findHeadOptionalFirstElement(),
     insertDocuments(),
     findAllDocuments(),
     findFirst(),
@@ -73,6 +74,18 @@ object FindSubscriptionSpec extends ZIOSpecDefault {
       assertZIO(documents.map(_.size))(equalTo(6))
     }
   }
+
+  def findHeadOptionalFirstElement() = {
+    val document = for {
+      col <- collection
+      docs <- col.find().headOption
+    } yield docs
+
+    test("Find first optional element of an empty collection should returns nothing ") {
+      assertZIO(document)(equalTo(None))
+    }
+  }
+
   def findOptionalFirst() = {
     val document = for {
       col  <- collection

@@ -6,7 +6,7 @@ lazy val scala213 = "2.13.10"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 ThisBuild / scalaVersion     := "2.13.8"
-ThisBuild / version          := "0.0.6"
+ThisBuild / version          := "0.0.7"
 ThisBuild / organization     := "io.github.mbannour"
 ThisBuild / organizationName := "mbannour"
 ThisBuild / description      := "ZIO wrapper for MongoDB Reactive Streams Java Driver"
